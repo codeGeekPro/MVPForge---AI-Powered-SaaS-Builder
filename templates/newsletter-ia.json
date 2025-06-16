@@ -1,0 +1,23 @@
+# Template MVP SaaS - Newsletter IA
+{
+  "name": "Newsletter IA",
+  "description": "Plateforme SaaS pour créer, gérer et envoyer des newsletters générées par IA.",
+  "features": [
+    "Authentification",
+    "Création de newsletters assistée par IA",
+    "Gestion des abonnés",
+    "Statistiques d'ouverture et de clics",
+    "Envoi programmé",
+    "Intégration Stripe pour paiement"
+  ],
+  "stack": [
+    "Next.js",
+    "Chakra UI",
+    "Node.js/Express",
+    "PostgreSQL"
+  ],
+  "ia_prompts": [
+    "Génère un contenu de newsletter sur l'actualité tech.",
+    "Génère un modèle de base de données pour la gestion des abonnés."
+  ]
+}

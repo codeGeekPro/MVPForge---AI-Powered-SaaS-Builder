@@ -1,0 +1,24 @@
+# Template MVP SaaS - Exemple
+
+{
+  "name": "CRM Freelance",
+  "description": "Un CRM simple pour freelances avec gestion de clients, tâches et factures.",
+  "features": [
+    "Authentification",
+    "Tableau de bord",
+    "Gestion des clients",
+    "Gestion des tâches",
+    "Facturation PDF",
+    "Notifications email"
+  ],
+  "stack": [
+    "Next.js",
+    "Chakra UI",
+    "Node.js/Express",
+    "MongoDB"
+  ],
+  "ia_prompts": [
+    "Génère une page d'accueil pour un CRM freelance.",
+    "Génère un modèle de base de données pour la gestion des clients."
+  ]
+}
