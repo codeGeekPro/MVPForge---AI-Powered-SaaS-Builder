@@ -11,21 +11,74 @@ interface MVPGenerationRequest {
   techPreferences?: string[];
 }
 
+interface GeneratedFile {
+  path: string;
+  content: string;
+  type: 'component' | 'page' | 'api' | 'config' | 'database';
+}
+
+interface DeploymentConfig {
+  vercel?: {
+    projectId: string;
+    teamId: string;
+  };
+  railway?: {
+    projectId: string;
+    serviceId: string;
+  };
+  env: Record<string, string>;
+}
+
+interface BusinessPlan {
+  marketSize: string;
+  targetAudience: string[];
+  revenueModel: string;
+  pricingStrategy: {
+    tiers: Array<{
+      name: string;
+      price: number;
+      features: string[];
+    }>;
+  };
+  marketingStrategy: string[];
+  growthMetrics: string[];
+}
+
+interface Architecture {
+  frontend: {
+    framework: string;
+    components: string[];
+    stateManagement: string;
+  };
+  backend: {
+    framework: string;
+    database: string;
+    apis: string[];
+  };
+  infrastructure: {
+    hosting: string;
+    cdn: string;
+    monitoring: string[];
+  };
+}
+
 interface GeneratedMVP {
   projectName: string;
-  files: Array<{
-    path: string;
-    content: string;
-    type: 'component' | 'page' | 'api' | 'config' | 'database';
-  }>;
-  deploymentConfig: {
-    vercel?: any;
-    railway?: any;
-    env: Record<string, string>;
-  };
-  businessPlan: any;
-  architecture: any;
+  files: GeneratedFile[];
+  deploymentConfig: DeploymentConfig;
+  businessPlan: BusinessPlan;
+  architecture: Architecture;
   nextSteps: string[];
+}
+
+interface UIFile {
+  name: string;
+  content: string;
+}
+
+interface BackendFile {
+  name: string;
+  content: string;
 }
 
 export class MVPGenerator {
@@ -64,14 +117,13 @@ export class MVPGenerator {
       projectName,
       files,
       deploymentConfig,
-      businessPlan: businessResult.data,
-      architecture: archResult.data,
-      nextSteps: this.generateNextSteps(businessResult.data, archResult.data)
+      businessPlan: businessResult.data as BusinessPlan,
+      architecture: archResult.data as Architecture,
+      nextSteps: this.generateNextSteps(businessResult.data as BusinessPlan, archResult.data as Architecture)
     };
   }
 
   private extractFeatures(idea: string): string[] {
-    // IA simple pour extraire les fonctionnalités clés
     const commonFeatures = [
       'authentification',
       'dashboard',
@@ -80,12 +132,10 @@ export class MVPGenerator {
       'notifications'
     ];
     
-    // À améliorer avec une vraie extraction IA
     return commonFeatures;
   }
 
   private generateProjectName(idea: string): string {
-    // Génère un nom de projet basé sur l'idée
     const words = idea.toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .split(' ')
@@ -95,24 +145,23 @@ export class MVPGenerator {
     return words.join('-') + '-mvp';
   }
 
-  private processUIFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: any}> {
+  private processUIFiles(files: UIFile[]): GeneratedFile[] {
     return files.map(file => ({
       path: `src/components/${file.name}`,
       content: this.enhanceUIComponent(file.content),
-      type: 'component' as const
+      type: 'component'
     }));
   }
 
-  private processBackendFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: any}> {
+  private processBackendFiles(files: BackendFile[]): GeneratedFile[] {
     return files.map(file => ({
       path: `api/${file.name}`,
       content: this.enhanceAPICode(file.content),
-      type: 'api' as const
+      type: 'api'
     }));
   }
 
   private enhanceUIComponent(content: string): string {
-    // Ajoute des améliorations automatiques aux composants
     const enhancements = `
 // Auto-générés par MVPForge
 import { useColorModeValue, useToast } from '@chakra-ui/react';
@@ -126,7 +175,6 @@ const MotionBox = motion(Box);
   }
 
   private enhanceAPICode(content: string): string {
-    // Ajoute des améliorations automatiques aux APIs
     const enhancements = `
 // Auto-générés par MVPForge
 import rateLimit from 'express-rate-limit';
@@ -143,8 +191,8 @@ const limiter = rateLimit({
     return enhancements + '\n' + content;
   }
 
-  private generateConfigFiles(idea: string, businessModel: string): Array<{path: string, content: string, type: any}> {
-    const files = [];
+  private generateConfigFiles(idea: string, businessModel: string): GeneratedFile[] {
+    const files: GeneratedFile[] = [];
 
     // Package.json
     files.push({
@@ -182,7 +230,7 @@ const limiter = rateLimit({
           'eslint-config-next': '^15.3.3'
         }
       }, null, 2),
-      type: 'config' as const
+      type: 'config'
     });
 
     // Next.js config
@@ -199,7 +247,7 @@ const nextConfig = {
 }
 
 module.exports = nextConfig`,
-      type: 'config' as const
+      type: 'config'
     });
 
     // Vercel.json
@@ -217,7 +265,7 @@ module.exports = nextConfig`,
           NODE_ENV: 'production'
         }
       }, null, 2),
-      type: 'config' as const
+      type: 'config'
     });
 
     // Prisma schema
@@ -249,9 +297,11 @@ ${businessModel === 'subscription' ? `
 model Subscription {
   id     String @id @default(cuid())
   userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
   plan   String
   status String
-  user   User   @relation(fields: [userId], references: [id])
+  startDate DateTime @default(now())
+  endDate   DateTime?
 }` : ''}
 
 ${businessModel === 'marketplace' ? `
@@ -261,79 +311,58 @@ model Listing {
   description String
   price       Float
   userId      String
-  createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }` : ''}`,
-      type: 'database' as const
+      type: 'database'
     });
 
     return files;
   }
 
-  private generateDeploymentConfig(projectName: string) {
+  private generateDeploymentConfig(projectName: string): DeploymentConfig {
     return {
       vercel: {
-        name: projectName,
-        version: 2,
-        builds: [{ src: 'package.json', use: '@vercel/next' }]
-      },
-      railway: {
-        build: {
-          builder: 'nixpacks'
-        },
-        deploy: {
-          startCommand: 'npm start'
-        }
+        projectId: `mvp-${projectName}`,
+        teamId: process.env.VERCEL_TEAM_ID || ''
       },
       env: {
-        NODE_ENV: 'production',
-        NEXTAUTH_SECRET: 'your-secret-here',
-        NEXTAUTH_URL: 'https://your-domain.vercel.app',
-        DATABASE_URL: 'postgresql://username:password@localhost:5432/database',
-        STRIPE_PUBLIC_KEY: 'pk_test_...',
-        STRIPE_SECRET_KEY: 'sk_test_...'
+        DATABASE_URL: process.env.DATABASE_URL || '',
+        NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || '',
+        STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || ''
       }
     };
   }
 
-  private generateNextSteps(businessPlan: any, architecture: any): string[] {
+  private generateNextSteps(businessPlan: BusinessPlan, architecture: Architecture): string[] {
     return [
-      '🔧 Configurer les variables d\'environnement',
-      '💾 Déployer la base de données (Railway/Supabase)',
-      '🚀 Déployer le frontend sur Vercel',
-      '💳 Configurer Stripe pour les paiements',
-      '📧 Intégrer un service d\'email (Resend/SendGrid)',
-      '📊 Ajouter l\'analytics (Vercel Analytics/Posthog)',
-      '🔒 Configurer l\'authentification (NextAuth)',
-      '🧪 Lancer des tests utilisateur',
-      '📈 Implémenter les métriques business',
-      '🎯 Optimiser pour le SEO et la performance'
+      'Configurer les variables d\'environnement',
+      'Déployer la base de données',
+      'Mettre en place l\'authentification',
+      'Configurer les paiements',
+      'Déployer sur Vercel'
     ];
   }
 
-  // Méthode pour créer un ZIP du projet
   async createProjectZip(mvp: GeneratedMVP): Promise<Buffer> {
     return new Promise((resolve, reject) => {
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      const archive = archiver('zip', {
+        zlib: { level: 9 }
+      });
+
       const chunks: Buffer[] = [];
-
-      archive.on('data', (chunk) => chunks.push(chunk));
+      archive.on('data', (chunk: Buffer) => chunks.push(chunk));
       archive.on('end', () => resolve(Buffer.concat(chunks)));
-      archive.on('error', reject);
+      archive.on('error', (err: Error) => reject(err));
 
-      // Ajouter tous les fichiers au ZIP
+      // Ajouter tous les fichiers au zip
       mvp.files.forEach(file => {
         archive.append(file.content, { name: file.path });
       });
 
       // Ajouter le README
       archive.append(this.generateREADME(mvp), { name: 'README.md' });
-      
-      // Ajouter le plan business
-      archive.append(
-        JSON.stringify(mvp.businessPlan, null, 2), 
-        { name: 'business-plan.json' }
-      );
 
       archive.finalize();
     });
@@ -342,31 +371,30 @@ model Listing {
   private generateREADME(mvp: GeneratedMVP): string {
     return `# ${mvp.projectName}
 
-🚀 **Généré automatiquement par MVPForge**
+## Description
+Projet MVP généré automatiquement par MVPForge.
 
-## Quick Start
-
+## Installation
 \`\`\`bash
 npm install
+\`\`\`
+
+## Configuration
+1. Copiez \`.env.example\` vers \`.env\`
+2. Configurez les variables d'environnement
+
+## Développement
+\`\`\`bash
 npm run dev
 \`\`\`
 
 ## Déploiement
-
 \`\`\`bash
 npm run deploy
 \`\`\`
 
-## Next Steps
-
-${mvp.nextSteps.map(step => `- [ ] ${step}`).join('\n')}
-
-## Architecture
-
-${JSON.stringify(mvp.architecture, null, 2)}
-
----
-*Généré avec ❤️ par MVPForge*
+## Prochaines étapes
+${mvp.nextSteps.map(step => `- ${step}`).join('\n')}
 `;
   }
 }

@@ -1,0 +1,540 @@
+diff --git a/ai-engine/generateMvp.ts b/ai-engine/generateMvp.ts
+--- a/ai-engine/generateMvp.ts
++++ b/ai-engine/generateMvp.ts
+@@ -3,1 +3,1 @@
+-import dotenv from 'dotenv';
++import dotenv from "dotenv";
+diff --git a/tests/e2e/mvp-generation.spec.ts b/tests/e2e/mvp-generation.spec.ts
+--- a/tests/e2e/mvp-generation.spec.ts
++++ b/tests/e2e/mvp-generation.spec.ts
+@@ -1,1 +1,1 @@
+-import { test, expect } from '@playwright/test';
++import { test, expect } from "@playwright/test";
+@@ -9,1 +9,1 @@
+-    await expect(page.locator('h1')).toContainText('SaasForge');
++    await expect(page.locator("h1")).toContainText("SaasForge");
+@@ -37,1 +37,1 @@
+-  test('Navigation vers les pages lÃ©gales', async ({ page }) => {
++  test("Navigation vers les pages lÃ©gales", async ({ page }) => {
+diff --git a/backend/__tests__/auth.test.ts b/backend/__tests__/auth.test.ts
+--- a/backend/__tests__/auth.test.ts
++++ b/backend/__tests__/auth.test.ts
+@@ -2,1 +2,1 @@
+-import app from '../index';
++import app from "../index";
+@@ -4,1 +4,1 @@
+-describe('Endpoints Authentification', () => {
++describe("Endpoints Authentification", () => {
+@@ -7,1 +7,1 @@
+-      .post('/api/auth/login')
++      .post("/api/auth/login")
+@@ -11,1 +11,1 @@
+-    expect(response.body).toHaveProperty('token');
++    expect(response.body).toHaveProperty("token");
+diff --git a/src/store/useAppStore.ts b/src/store/useAppStore.ts
+--- a/src/store/useAppStore.ts
++++ b/src/store/useAppStore.ts
+@@ -8,1 +8,1 @@
+-  mvpHistory: Array<{ id: string; prompt: string; result: string; createdAt: string }>;
++  mvpHistory: { id: string; prompt: string; result: string; createdAt: string }[];
+@@ -41,1 +41,1 @@
+-      name: 'mvpforge-storage',
++      name: "mvpforge-storage",
+@@ -43,1 +43,1 @@
+-        language: state.language, 
++        language: state.language,
+diff --git a/src/app/modern-generator.tsx b/src/app/modern-generator.tsx
+--- a/src/app/modern-generator.tsx
++++ b/src/app/modern-generator.tsx
+@@ -32,1 +32,1 @@
+-  FiPocket, 
++  FiPocket,
+@@ -36,1 +36,1 @@
+-  FiDatabase, 
++  FiDatabase,
+@@ -48,1 +48,1 @@
+-  ui?: any;
++  ui?: unknown;
+@@ -49,1 +49,1 @@
+-  backend?: any;
++  backend?: unknown;
+@@ -50,1 +50,1 @@
+-  architecture?: any;
++  architecture?: unknown;
+@@ -51,1 +51,1 @@
+-  business?: any;
++  business?: unknown;
+@@ -94,1 +94,1 @@
+-      setResult(prev => ({ ...prev!, progress, currentStep: step }));
++      setResult((prev) => ({ ...prev!, progress, currentStep: step }));
+@@ -109,1 +109,1 @@
+-    
++
+@@ -190,1 +190,1 @@
+-                  onChange={e => setPrompt(e.target.value)}
++                  onChange={e => { setPrompt(e.target.value); }}
+@@ -316,1 +316,1 @@
+-function ResultCard({ title, icon, content }: any) {
++function ResultCard({ title, icon, content }: unknown) {
+diff --git a/backend/jest.config.js b/backend/jest.config.js
+--- a/backend/jest.config.js
++++ b/backend/jest.config.js
+@@ -2,1 +2,1 @@
+-  preset: 'ts-jest',
++  preset: "ts-jest",
+@@ -3,1 +3,1 @@
+-  testEnvironment: 'node',
++  testEnvironment: "node",
+@@ -4,1 +4,1 @@
+-  roots: ['<rootDir>'],
++  roots: ["<rootDir>"],
+@@ -5,1 +5,1 @@
+-  testMatch: ['**/__tests__/**/*.test.ts'],
++  testMatch: ["**/__tests__/**/*.test.ts"],
+@@ -7,1 +7,1 @@
+-    '**/*.ts',
++    "**/*.ts",
+@@ -8,1 +8,1 @@
+-    '!**/*.d.ts',
++    "!**/*.d.ts",
+@@ -9,1 +9,1 @@
+-    '!**/node_modules/**',
++    "!**/node_modules/**",
+@@ -10,1 +10,1 @@
+-    '!**/dist/**',
++    "!**/dist/**",
+@@ -12,1 +12,1 @@
+-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
++  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+@@ -13,1 +13,1 @@
+-}
++};
+diff --git a/src/app/page-new.tsx b/src/app/page-new.tsx
+--- a/src/app/page-new.tsx
++++ b/src/app/page-new.tsx
+@@ -33,1 +33,1 @@
+-  const [analysis, setAnalysis] = useState<any>(null);
++  const [analysis, setAnalysis] = useState<unknown>(null);
+@@ -46,1 +46,1 @@
+-      setTimeout(() => setStep(2), 1000);
++      setTimeout(() => { setStep(2); }, 1000);
+@@ -47,1 +47,1 @@
+-      setTimeout(() => setStep(3), 2000);
++      setTimeout(() => { setStep(3); }, 2000);
+@@ -116,1 +116,1 @@
+-                  onChange={e => setPrompt(e.target.value)}
++                  onChange={e => { setPrompt(e.target.value); }}
+@@ -123,1 +123,1 @@
+-                  <Button 
++                  <Button
+@@ -136,1 +136,1 @@
+-                    onClick={handleClassify} 
++                    onClick={handleClassify}
+diff --git a/jest.config.js b/jest.config.js
+--- a/jest.config.js
++++ b/jest.config.js
+@@ -1,1 +1,1 @@
+-const nextJest = require('next/jest')
++const nextJest = require("next/jest");
+@@ -4,1 +4,1 @@
+-  dir: './',
++  dir: "./",
+@@ -5,1 +5,1 @@
+-})
++});
+@@ -8,1 +8,1 @@
+-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
++  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+@@ -9,1 +9,1 @@
+-  testEnvironment: 'jest-environment-jsdom',
++  testEnvironment: "jest-environment-jsdom",
+@@ -11,1 +11,1 @@
+-    '^@/(.*)$': '<rootDir>/src/$1',
++    "^@/(.*)$": "<rootDir>/src/$1",
+@@ -18,1 +18,1 @@
+-}
++};
+@@ -20,1 +20,1 @@
+-module.exports = createJestConfig(customJestConfig)
++module.exports = createJestConfig(customJestConfig);
+diff --git a/backend/free-api-manager.ts b/backend/free-api-manager.ts
+--- a/backend/free-api-manager.ts
++++ b/backend/free-api-manager.ts
+@@ -13,1 +13,1 @@
+-      chat: 'meta-llama/llama-3.1-8b-instruct:free'
++      chat: "meta-llama/llama-3.1-8b-instruct:free",
+@@ -14,1 +14,1 @@
+-    }
++    },
+@@ -16,1 +16,1 @@
+-  
++
+@@ -30,1 +30,1 @@
+-    baseURL: 'https://newsapi.org/v2',
++    baseURL: "https://newsapi.org/v2",
+@@ -51,1 +51,1 @@
+-  async generateWithFallback(prompt: string, useOpenAI: boolean = true): Promise<string> {
++  async generateWithFallback(prompt: string, useOpenAI = true): Promise<string> {
+@@ -75,1 +75,1 @@
+-          'Authorization': `Bearer ${FREE_APIS.openrouter.apiKey}`,
++            Authorization: `Bearer ${FREE_APIS.openrouter.apiKey}`,
+@@ -79,1 +79,1 @@
+-        },
++          },
+@@ -81,1 +81,1 @@
+-          model: FREE_APIS.openrouter.models.chat,
++            model: FREE_APIS.openrouter.models.chat,
+@@ -83,1 +83,1 @@
+-          temperature: 0.7
++            temperature: 0.7,
+@@ -92,1 +92,1 @@
+-      console.log('OpenRouter response:', JSON.stringify(data, null, 2));
++      console.log("OpenRouter response:", JSON.stringify(data, null, 2));
+@@ -95,1 +95,1 @@
+-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
++      if (!data.choices?.[0]?.message) {
+@@ -97,1 +97,1 @@
+-        return 'Erreur: RÃ©ponse OpenRouter malformÃ©e';
++        return "Erreur: RÃ©ponse OpenRouter malformÃ©e";
+@@ -101,1 +101,1 @@
+-    } catch (error: any) {
++    } catch (error: unknown) {
+@@ -108,1 +108,1 @@
+-  async enrichUserData(ip: string, email?: string): Promise<any> {
++  async enrichUserData(ip: string, email?: string): Promise<unknown> {
+@@ -109,1 +109,1 @@
+-    const enrichment: any = {};
++    const enrichment: unknown = {};
+@@ -135,1 +135,1 @@
+-  async generateDynamicContent(topic: string, country?: string): Promise<any> {
++  async generateDynamicContent(topic: string, country?: string): Promise<unknown> {
+@@ -152,1 +152,1 @@
+-  async generateVisual(templateId: string, data: any): Promise<string> {
++  async generateVisual(templateId: string, data: unknown): Promise<string> {
+@@ -160,1 +160,1 @@
+-          'X-API-KEY': FREE_APIS.apitemplate.apiKey as string,
++          'X-API-KEY': FREE_APIS.apitemplate.apiKey,
+@@ -178,1 +178,1 @@
+-  generateAvatar(seed: string, size: number = 200): string {
++  generateAvatar(seed: string, size = 200): string {
+@@ -183,1 +183,1 @@
+-  async analyzeMarket(idea: string, location?: any): Promise<any> {
++  async analyzeMarket(idea: string, location?: unknown): Promise<any> {
+@@ -184,1 +184,1 @@
+-    const analysis: any = {
++    const analysis: unknown = {
+@@ -208,1 +208,1 @@
+-  getDemoExamples(): Array<{idea: string, apis: string[]}> {
++  getDemoExamples(): {idea: string, apis: string[]}[] {
+diff --git a/backend/advanced-routes.ts b/backend/advanced-routes.ts
+--- a/backend/advanced-routes.ts
++++ b/backend/advanced-routes.ts
+@@ -3,1 +3,1 @@
+-import { MVPGenerator } from './mvp-generator';
++import { MVPGenerator } from "./mvp-generator";
+@@ -54,1 +54,1 @@
+-router.post('/deploy/:projectName', async (req, res) => {
++router.post("/deploy/:projectName", async (req, res) => {
+@@ -64,1 +64,1 @@
+-      deploymentId: deploymentResult.id
++      deploymentId: deploymentResult.id,
+@@ -92,1 +92,1 @@
+-router.post('/revenue-estimation', async (req, res) => {
++router.post("/revenue-estimation", async (req, res) => {
+@@ -111,1 +111,1 @@
+-router.post('/generate-personas', async (req, res) => {
++router.post("/generate-personas", async (req, res) => {
+@@ -120,1 +120,1 @@
+-      painPoints: await identifyPainPoints(personas)
++      painPoints: await identifyPainPoints(personas),
+@@ -171,1 +171,1 @@
+-async function deployToVercel(mvp: any) {
++async function deployToVercel(mvp: unknown) {
+@@ -204,1 +204,1 @@
+-    method: 'POST',
++    method: "POST",
+@@ -213,1 +213,1 @@
+-        data: Buffer.from(file.content).toString('base64')
++          data: Buffer.from(file.content).toString("base64"),
+@@ -244,1 +244,1 @@
+-async function findMarketGaps(competitors: any[]) {
++async function findMarketGaps(competitors: unknown[]) {
+@@ -248,1 +248,1 @@
+-    pricingGaps: ['Budget tier missing', 'Enterprise features'],
++    pricingGaps: ["Budget tier missing", "Enterprise features"],
+@@ -253,1 +253,1 @@
+-async function getStrategicRecommendations(competitors: any[], idea: string) {
++async function getStrategicRecommendations(competitors: unknown[], idea: string) {
+@@ -263,1 +263,1 @@
+-async function calculateRevenueProjection(params: any) {
++async function calculateRevenueProjection(params: unknown) {
+@@ -307,1 +307,1 @@
+-async function generateUserJourneys(personas: any[]) {
++async function generateUserJourneys(personas: unknown[]) {
+@@ -324,1 +324,1 @@
+-async function identifyPainPoints(personas: any[]) {
++async function identifyPainPoints(personas: unknown[]) {
+@@ -385,1 +385,1 @@
+-function generateExperimentTimeline(experiments: any[]) {
++function generateExperimentTimeline(experiments: unknown[]) {
+diff --git a/backend/ai-agents.ts b/backend/ai-agents.ts
+--- a/backend/ai-agents.ts
++++ b/backend/ai-agents.ts
+@@ -2,1 +2,1 @@
+-import { OpenAI } from 'openai';
++import { OpenAI } from "openai";
+@@ -6,1 +6,1 @@
+-  data: any;
++  data: unknown;
+@@ -8,1 +8,1 @@
+-  files?: Array<{name: string, content: string}>;
++  files?: {name: string, content: string}[];
+@@ -139,1 +139,1 @@
+-  private parseCodeFiles(content: string): Array<{name: string, content: string}> {
++  private parseCodeFiles(content: string): {name: string, content: string}[] {
+@@ -140,1 +140,1 @@
+-    const files: Array<{name: string, content: string}> = [];
++    const files: {name: string, content: string}[] = [];
+@@ -141,1 +141,1 @@
+-    const codeBlocks = content.match(/```[\s\S]*?```/g) || [];
++    const codeBlocks = content.match(/```[\s\S]*?```/g) ?? [];
+@@ -144,1 +144,1 @@
+-      const lines = block.split('\n');
++      const lines = block.split("\n");
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -25,1 +25,1 @@
+-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
++  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -28,1 +28,1 @@
+-import { ExternalLinkIcon } from '@chakra-ui/icons';
++import { ExternalLinkIcon } from "@chakra-ui/icons";
+@@ -30,1 +30,1 @@
+-import Head from 'next/head';
++import Head from "next/head";
+@@ -31,1 +31,1 @@
+-import { FaTwitter, FaLinkedin } from 'react-icons/fa';
++import { FaTwitter, FaLinkedin } from "react-icons/fa";
+@@ -36,1 +36,1 @@
+-  const [language, setLanguage] = useState<'fr' | 'en'>('fr');
++  const [language, setLanguage] = useState<"fr" | "en">("fr");
+@@ -59,1 +59,1 @@
+-      analytics: "Tableau de bord analytique"
++      analytics: "Tableau de bord analytique",
+@@ -80,1 +80,1 @@
+-      analytics: "Analytics dashboard"
++      analytics: "Analytics dashboard",
+@@ -104,1 +104,1 @@
+-  const [analysis, setAnalysis] = useState<any>(null);
++  const [analysis, setAnalysis] = useState<unknown>(null);
+@@ -105,1 +105,1 @@
+-  const [multiAgents, setMultiAgents] = useState<any>(null);
++  const [multiAgents, setMultiAgents] = useState<unknown>(null);
+@@ -106,1 +106,1 @@
+-  const [experiments, setExperiments] = useState<any>(null);
++  const [experiments, setExperiments] = useState<unknown>(null);
+@@ -236,1 +236,1 @@
+-              <li role="none"><Button onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')} variant="outline" color="white" _hover={{ bg: "whiteAlpha.200" }} role="menuitem" aria-label="Changer la langue">{language === 'fr' ? 'FR' : 'EN'}</Button></li>
++              <li role="none"><Button onClick={() => { setLanguage(language === 'fr' ? 'en' : 'fr'); }} variant="outline" color="white" _hover={{ bg: "whiteAlpha.200" }} role="menuitem" aria-label="Changer la langue">{language === 'fr' ? 'FR' : 'EN'}</Button></li>
+@@ -287,1 +287,1 @@
+-              onChange={e => setPrompt(e.target.value)}
++              onChange={e => { setPrompt(e.target.value); }}
+diff --git a/frontend/__tests__/components.test.tsx b/frontend/__tests__/components.test.tsx
+--- a/frontend/__tests__/components.test.tsx
++++ b/frontend/__tests__/components.test.tsx
+@@ -5,1 +5,1 @@
+-import '@testing-library/jest-dom/extend-expect';
++import "@testing-library/jest-dom/extend-expect";
+@@ -31,1 +31,1 @@
+-    const langButton = screen.getByRole('button', { name: /FR/i });
++    const langButton = screen.getByRole("button", { name: /FR/i });
+@@ -33,1 +33,1 @@
+-    expect(langButton).toHaveTextContent('EN');
++    expect(langButton).toHaveTextContent("EN");
+diff --git a/backend/__tests__/health.test.ts b/backend/__tests__/health.test.ts
+--- a/backend/__tests__/health.test.ts
++++ b/backend/__tests__/health.test.ts
+@@ -1,1 +1,1 @@
+-import request from 'supertest';
++import request from "supertest";
+@@ -2,1 +2,1 @@
+-import express from 'express';
++import express from "express";
+diff --git a/jest.setup.js b/jest.setup.js
+--- a/jest.setup.js
++++ b/jest.setup.js
+@@ -1,1 +1,1 @@
+-import '@testing-library/jest-dom'
++import "@testing-library/jest-dom";
+@@ -4,1 +4,1 @@
+-jest.mock('next/navigation', () => ({
++jest.mock("next/navigation", () => ({
+@@ -10,1 +10,1 @@
+-    }
++    };
+@@ -13,1 +13,1 @@
+-    return new URLSearchParams()
++    return new URLSearchParams();
+@@ -16,1 +16,1 @@
+-    return ''
++    return "";
+@@ -18,1 +18,1 @@
+-}))
++}));
+@@ -21,1 +21,1 @@
+-jest.mock('@chakra-ui/react', () => ({
++jest.mock("@chakra-ui/react", () => ({
+@@ -22,1 +22,1 @@
+-  ...jest.requireActual('@chakra-ui/react'),
++  ...jest.requireActual("@chakra-ui/react"),
+@@ -24,1 +24,1 @@
+-    colorMode: 'light',
++    colorMode: "light",
+diff --git a/src/app/styles.ts b/src/app/styles.ts
+--- a/src/app/styles.ts
++++ b/src/app/styles.ts
+@@ -49,1 +49,1 @@
+-  card: cardStyle,
++
+diff --git a/backend/__tests__/ai-endpoints.test.ts b/backend/__tests__/ai-endpoints.test.ts
+--- a/backend/__tests__/ai-endpoints.test.ts
++++ b/backend/__tests__/ai-endpoints.test.ts
+@@ -4,1 +4,1 @@
+-describe('Endpoints IA', () => {
++describe("Endpoints IA", () => {
+@@ -7,1 +7,1 @@
+-      .post('/api/ai/generate')
++      .post("/api/ai/generate")
+@@ -11,1 +11,1 @@
+-    expect(response.body).toHaveProperty('result');
++    expect(response.body).toHaveProperty("result");
+@@ -16,1 +16,1 @@
+-      .post('/api/ai/classify')
++      .post("/api/ai/classify")
+@@ -20,1 +20,1 @@
+-    expect(response.body).toHaveProperty('categories');
++    expect(response.body).toHaveProperty("categories");
+diff --git a/backend/auth.ts b/backend/auth.ts
+--- a/backend/auth.ts
++++ b/backend/auth.ts
+@@ -8,1 +8,1 @@
+-const SECRET_KEY = process.env.JWT_SECRET || 'default_secret';
++const SECRET_KEY = process.env.JWT_SECRET ?? 'default_secret';
+@@ -12,1 +12,1 @@
+-  user?: any;
++  user?: unknown;
+@@ -17,1 +17,1 @@
+-  const token = req.headers['authorization']?.split(' ')[1];
++  const token = req.headers.authorization?.split(' ')[1];
+@@ -23,1 +23,1 @@
+-  jwt.verify(token, SECRET_KEY, (err: any, user: any) => {
++  jwt.verify(token, SECRET_KEY, (err: unknown, user: any) => {
+@@ -33,1 +33,1 @@
+-  res.json({ message: 'DonnÃ©es sÃ©curisÃ©es', user: req.user });
++  res.json({ message: "DonnÃ©es sÃ©curisÃ©es", user: req.user });
+diff --git a/backend/generate-zip.ts b/backend/generate-zip.ts
+--- a/backend/generate-zip.ts
++++ b/backend/generate-zip.ts
+@@ -31,1 +31,1 @@
+-      }
++      },
+@@ -44,1 +44,1 @@
+-      };
++        };
+diff --git a/next.config.js b/next.config.js
+--- a/next.config.js
++++ b/next.config.js
+@@ -4,1 +4,1 @@
+-    domains: ['localhost', 'cloudinary.com'],
++    domains: ["localhost", "cloudinary.com"],
+@@ -5,1 +5,1 @@
+-    loader: 'default',
++    loader: "default",
+diff --git a/backend/mvp-generator.ts b/backend/mvp-generator.ts
+--- a/backend/mvp-generator.ts
++++ b/backend/mvp-generator.ts
+@@ -4,1 +4,1 @@
+-import { writeFileSync, mkdirSync, existsSync } from 'fs';
++import { writeFileSync, mkdirSync, existsSync } from "fs";
+@@ -10,1 +10,1 @@
+-  businessModel?: 'freemium' | 'subscription' | 'marketplace' | 'saas';
++  businessModel?: "freemium" | "subscription" | "marketplace" | "saas";
+@@ -22,1 +22,1 @@
+-    vercel?: any;
++    vercel?: unknown;
+@@ -23,1 +23,1 @@
+-    railway?: any;
++    railway?: unknown;
+@@ -26,1 +26,1 @@
+-  businessPlan: any;
++  businessPlan: unknown;
+@@ -27,1 +27,1 @@
+-  architecture: any;
++  architecture: unknown;
+@@ -45,1 +45,1 @@
+-      this.aiAgents.generateArchitecture(idea),
++        this.aiAgents.generateArchitecture(idea),
+@@ -55,1 +55,1 @@
+-      ...this.processUIFiles(uiResult.files || []),
++      ...this.processUIFiles(uiResult.files ?? []),
+@@ -56,1 +56,1 @@
+-      ...this.processBackendFiles(backendResult.files || []),
++      ...this.processBackendFiles(backendResult.files ?? []),
+@@ -77,1 +77,1 @@
+-      'dashboard',
++      "dashboard",
+@@ -90,1 +90,1 @@
+-      .replace(/[^a-z0-9\s]/g, '')
++      .replace(/[^a-z\d\s]/g, '')
+@@ -91,1 +91,1 @@
+-      .split(' ')
++      .split(" ")
+@@ -98,1 +98,1 @@
+-  private processUIFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: any}> {
++  private processUIFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: unknown}> {
+@@ -106,1 +106,1 @@
+-  private processBackendFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: any}> {
++  private processBackendFiles(files: Array<{name: string, content: string}>): Array<{path: string, content: string, type: unknown}> {
+@@ -110,1 +110,1 @@
+-      type: 'api' as const
++      type: "api" as const,
+@@ -146,1 +146,1 @@
+-  private generateConfigFiles(idea: string, businessModel: string): Array<{path: string, content: string, type: any}> {
++  private generateConfigFiles(idea: string, businessModel: string): Array<{path: string, content: string, type: unknown}> {
+@@ -299,1 +299,1 @@
+-  private generateNextSteps(businessPlan: any, architecture: any): string[] {
++  private generateNextSteps(businessPlan: unknown, architecture: any): string[] {
+@@ -321,1 +321,1 @@
+-      archive.on('end', () => resolve(Buffer.concat(chunks)));
++      archive.on('end', () => { resolve(Buffer.concat(chunks)); });
+diff --git a/backend/index.ts b/backend/index.ts
+--- a/backend/index.ts
++++ b/backend/index.ts
+@@ -4,1 +4,1 @@
+-import bodyParser from 'body-parser';
++import bodyParser from "body-parser";
+@@ -63,1 +63,1 @@
+-  (): Promise<void>;
++
+@@ -67,1 +67,1 @@
+-  (err: Error): void;
++
+@@ -71,1 +71,1 @@
+-  .then(() => logger.info('Connexion Ã  la base de donnÃ©es rÃ©ussie'))
++  .then(() => logger.info("Connexion Ã  la base de donnÃ©es rÃ©ussie"))
+@@ -401,1 +401,1 @@
+-    const kpisByModel: any = {
++    const kpisByModel: unknown = {
+@@ -420,1 +420,1 @@
+-    const suggestedKpis = kpisByModel[businessModel] || kpisByModel['saas'];
++    const suggestedKpis = kpisByModel[businessModel] || kpisByModel.saas;
+@@ -545,1 +545,1 @@
+-  } catch (e: any) {
++  } catch (e: unknown) {
+@@ -641,1 +641,1 @@
+-  const PORT = process.env.PORT || 4000;
++  const PORT = process.env.PORT ?? 4000;

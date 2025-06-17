@@ -9,24 +9,20 @@ const SECRET_KEY = process.env.JWT_SECRET || 'default_secret';
 
 // Interface pour étendre Request avec user
 interface AuthenticatedRequest extends Request {
-  user?: {
-    username: string;
-    iat: number;
-    exp: number;
-  };
+  user?: any;
 }
 
 // Middleware pour vérifier le token
 function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
   const token = req.headers['authorization']?.split(' ')[1];
   if (!token) {
-    res.status(401).send({ error: 'Token manquant' });
+    res.status(401).json({ error: 'Token manquant' });
     return;
   }
 
-  jwt.verify(token, SECRET_KEY, (err: jwt.VerifyErrors | null, user: any) => {
+  jwt.verify(token, SECRET_KEY, (err: any, user: any) => {
     if (err) {
-      res.status(403).send({ error: 'Token invalide' });
+      res.status(403).json({ error: 'Token invalide' });
       return;
     }
     req.user = user;
@@ -38,17 +34,17 @@ function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextF
 router.post('/login', (req: Request, res: Response): void => {
   const { username } = req.body;
   if (!username) {
-    res.status(400).send({ error: 'Nom d\'utilisateur requis' });
+    res.status(400).json({ error: 'Nom d\'utilisateur requis' });
     return;
   }
 
   const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
-  res.status(200).send({ token });
+  res.json({ token });
 });
 
 // Exemple d'endpoint sécurisé
 router.get('/secure-data', authenticateToken, (req: AuthenticatedRequest, res: Response): void => {
-  res.status(200).send({ message: 'Données sécurisées', user: req.user });
+  res.json({ message: 'Données sécurisées', user: req.user });
 });
 
 export default router;

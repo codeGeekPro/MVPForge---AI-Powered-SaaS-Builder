@@ -16,16 +16,17 @@ export const authLoginSchema = z.object({
 
 // Middleware de validation
 export function validateRequest(schema: z.ZodSchema) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        res.status(400).send({
           error: 'Données invalides',
           details: error.errors,
         });
+        return;
       }
       next(error);
     }
@@ -34,16 +35,17 @@ export function validateRequest(schema: z.ZodSchema) {
 
 // Validation des paramètres de requête
 export const validateQueryParams = (schema: z.ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       schema.parse(req.query);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        res.status(400).send({
           error: 'Paramètres invalides',
           details: error.errors,
         });
+        return;
       }
       next(error);
     }

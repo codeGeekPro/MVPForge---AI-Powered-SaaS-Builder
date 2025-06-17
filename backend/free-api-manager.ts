@@ -2,6 +2,57 @@
 import { OpenAI } from 'openai';
 import fetch from 'node-fetch';
 
+interface OpenRouterResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+}
+
+interface GeolocationData {
+  ip_address: string;
+  city: string;
+  country: string;
+  currency: string;
+  timezone: string;
+}
+
+interface EmailValidationData {
+  email: string;
+  is_valid: boolean;
+  score: number;
+}
+
+interface NewsArticle {
+  title: string;
+  description: string;
+  url: string;
+  publishedAt: string;
+}
+
+interface NewsResponse {
+  articles: NewsArticle[];
+}
+
+interface MarketAnalysis {
+  idea: string;
+  timestamp: string;
+  marketTrends: string[];
+  relatedNews: NewsArticle[];
+  targetMarket?: {
+    country: string;
+    city: string;
+    currency: string;
+    timezone: string;
+  };
+}
+
+interface DemoExample {
+  idea: string;
+  apis: string[];
+}
+
 // Configuration APIs gratuites
 const FREE_APIS = {
   // IA - OpenRouter (backup OpenAI)
@@ -88,41 +139,44 @@ class FreeAPIManager {
         throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as OpenRouterResponse;
       console.log('OpenRouter response:', JSON.stringify(data, null, 2));
       
-      // Vérification de la structure de réponse
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      if (!data.choices?.[0]?.message?.content) {
         console.error('Structure de réponse OpenRouter inattendue:', data);
         return 'Erreur: Réponse OpenRouter malformée';
       }
       
-      return data.choices[0].message.content || 'Aucune réponse générée par OpenRouter';
-    } catch (error: any) {
+      return data.choices[0].message.content;
+    } catch (error) {
       console.error('Erreur OpenRouter:', error);
-      return `Erreur OpenRouter: ${error.message || 'Erreur inconnue'}`;
+      return `Erreur OpenRouter: ${error instanceof Error ? error.message : 'Erreur inconnue'}`;
     }
   }
   
   // Enrichissement données utilisateur
-  async enrichUserData(ip: string, email?: string): Promise<any> {
-    const enrichment: any = {};
+  async enrichUserData(ip: string, email?: string): Promise<{
+    location?: GeolocationData;
+    emailValidation?: EmailValidationData;
+  }> {
+    const enrichment: {
+      location?: GeolocationData;
+      emailValidation?: EmailValidationData;
+    } = {};
     
-    // Géolocalisation
     if (ip) {
       try {
         const geoResponse = await fetch(`${FREE_APIS.abstract.baseURL}${FREE_APIS.abstract.endpoints.geolocation}?api_key=${FREE_APIS.abstract.apiKey}&ip_address=${ip}`);
-        enrichment.location = await geoResponse.json();
+        enrichment.location = await geoResponse.json() as GeolocationData;
       } catch (error) {
         console.error('Geolocation failed:', error);
       }
     }
     
-    // Validation email
     if (email) {
       try {
         const emailResponse = await fetch(`${FREE_APIS.abstract.baseURL}${FREE_APIS.abstract.endpoints.emailValidation}?api_key=${FREE_APIS.abstract.apiKey}&email=${email}`);
-        enrichment.emailValidation = await emailResponse.json();
+        enrichment.emailValidation = await emailResponse.json() as EmailValidationData;
       } catch (error) {
         console.error('Email validation failed:', error);
       }
@@ -132,15 +186,18 @@ class FreeAPIManager {
   }
   
   // Génération contenu dynamique
-  async generateDynamicContent(topic: string, country?: string): Promise<any> {
+  async generateDynamicContent(topic: string, country?: string): Promise<{
+    articles: NewsArticle[];
+    trends: string[];
+  }> {
     try {
       const query = country ? `${topic} AND country:${country}` : topic;
       const response = await fetch(`${FREE_APIS.newsapi.baseURL}${FREE_APIS.newsapi.endpoints.everything}?q=${query}&apiKey=${FREE_APIS.newsapi.apiKey}&pageSize=5`);
-      const data = await response.json();
+      const data = await response.json() as NewsResponse;
       
       return {
         articles: data.articles?.slice(0, 3) || [],
-        trends: data.articles?.map((a: { title: string }) => a.title) || []
+        trends: data.articles?.map(a => a.title) || []
       };
     } catch (error) {
       console.error('News API failed:', error);
@@ -180,18 +237,18 @@ class FreeAPIManager {
   }
   
   // Analyse marché avec données gratuites
-  async analyzeMarket(idea: string, location?: any): Promise<any> {
-    const analysis: any = {
+  async analyzeMarket(idea: string, location?: GeolocationData): Promise<MarketAnalysis> {
+    const analysis: MarketAnalysis = {
       idea,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      marketTrends: [],
+      relatedNews: []
     };
     
-    // Contenu marché basé sur news
     const marketContent = await this.generateDynamicContent(idea, location?.country);
     analysis.marketTrends = marketContent.trends;
     analysis.relatedNews = marketContent.articles;
     
-    // Données économiques région
     if (location) {
       analysis.targetMarket = {
         country: location.country,
@@ -205,7 +262,7 @@ class FreeAPIManager {
   }
   
   // Template d'exemples pour la démo
-  getDemoExamples(): Array<{idea: string, apis: string[]}> {
+  getDemoExamples(): DemoExample[] {
     return [
       {
         idea: "Plateforme de covoiturage pour vélos électriques urbains",

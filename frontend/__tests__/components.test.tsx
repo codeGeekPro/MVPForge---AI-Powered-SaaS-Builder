@@ -3,6 +3,7 @@ import Home from '../../src/app/page';
 // Ajoutez ceci pour que TypeScript reconnaisse les matchers personnalisés
 // Importez les matchers personnalisés pour Jest et TypeScript
 import '@testing-library/jest-dom/extend-expect';
+import { describe, it, expect } from '@jest/globals';
 
 describe('Composants principaux', () => {
   it('Affiche le titre principal', () => {
@@ -19,14 +20,14 @@ describe('Composants principaux', () => {
 });
 
 describe('Interactions utilisateur', () => {
-  it('Clique sur le bouton de génération', () => {
+  it('Clique sur le bouton de génération', async () => {
     render(<Home />);
     const button = screen.getByRole('button', { name: /GÉNÉRER MON MVP/i });
     fireEvent.click(button);
     expect(button).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('Change la langue', () => {
+  it('Change la langue', async () => {
     render(<Home />);
     const langButton = screen.getByRole('button', { name: /FR/i });
     fireEvent.click(langButton);

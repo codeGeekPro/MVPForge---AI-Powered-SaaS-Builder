@@ -35,7 +35,7 @@ const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level}] ${message}`)
+    winston.format.printf(({ timestamp, level, message }: { timestamp: string; level: string; message: string }) => `${timestamp} [${level}] ${message}`)
   ),
   transports: [
     new winston.transports.Console(),
@@ -53,7 +53,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Exemple d'utilisation des logs
-app.use((req, res, next) => {
+app.use((req: express.Request, res: express.Response, next: express.NextFunction): void => {
   logger.info(`${req.method} ${req.url}`);
   next();
 });
@@ -71,8 +71,8 @@ sequelize.authenticate()
   .then(() => logger.info('Connexion à la base de données réussie'))
   .catch((err: Error) => logger.error('Erreur de connexion à la base de données', err));
 
-app.get('/api/health', (req: express.Request, res: express.Response) => {
-  res.json({ status: 'ok', message: 'Backend SaasForge opérationnel' });
+app.get('/api/health', (req: express.Request, res: express.Response): void => {
+  res.status(200).send({ status: 'OK' });
 });
 
 // Pré-processing intelligent du prompt selon le contexte
@@ -108,7 +108,7 @@ app.post('/api/ai/generate', validateRequest(generateMvpSchema), async (req: exp
     
     console.log('Réponse IA reçue:', result.substring(0, 100) + '...');
     
-    res.json({ result });
+    res.status(200).send({ mvp: result });
     console.log('=== Fin de la requête (succès) ===');
   } catch (e: unknown) {
     console.log('=== ERREUR dans /api/ai/generate ===');
@@ -117,7 +117,7 @@ app.post('/api/ai/generate', validateRequest(generateMvpSchema), async (req: exp
     const errorMsg = e instanceof Error ? e.message : String(e);
     console.log('Message d\'erreur:', errorMsg);
     
-    res.status(500).json({ error: 'Erreur IA', details: errorMsg });
+    res.status(500).send({ error: 'Erreur IA', details: errorMsg });
     console.log('=== Fin de la requête (erreur) ===');
   }
 });
@@ -155,10 +155,10 @@ Réponds au format JSON strict :
       // Si l'IA ne répond pas en JSON strict, renvoyer le texte brut
       result = { raw: response };
     }
-    res.json(result);
+    res.status(200).send({ classification: result });
   } catch (e: unknown) {
     const errorMsg = e instanceof Error ? e.message : String(e);
-    res.status(500).json({ error: 'Erreur classification IA', details: errorMsg });
+    res.status(500).send({ error: 'Erreur classification IA', details: errorMsg });
   }
 });
 
@@ -547,7 +547,7 @@ app.post('/api/ai/generate-code-zip', async (req: express.Request, res: express.
   }
 });
 
-// Endpoint : Génération de suggestions d’expérimentations
+// Endpoint : Génération de suggestions d'expérimentations
 app.post('/api/ai/experiments', async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   if (!idea) {
@@ -609,7 +609,7 @@ app.post('/api/mvp/save', async (req: express.Request, res: express.Response): P
   }
 });
 
-// Endpoint pour lister l’historique des MVP générés
+// Endpoint pour lister l'historique des MVP générés
 app.get('/api/mvp/history', async (req: express.Request, res: express.Response): Promise<void> => {
   try {
     const history = await prisma.mvp.findMany({
@@ -618,7 +618,7 @@ app.get('/api/mvp/history', async (req: express.Request, res: express.Response):
     });
     res.json({ history });
   } catch (e: unknown) {
-    res.status(500).json({ error: 'Erreur lors de la récupération de l’historique', details: e instanceof Error ? e.message : String(e) });
+    res.status(500).json({ error: 'Erreur lors de la récupération de l'historique', details: e instanceof Error ? e.message : String(e) });
   }
 });
 

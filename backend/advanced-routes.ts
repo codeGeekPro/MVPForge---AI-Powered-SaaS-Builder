@@ -1,13 +1,70 @@
 // API routes avancées pour MVPForge
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { MVPGenerator } from './mvp-generator';
 import { AIAgentSystem } from './ai-agents';
+
+interface GenerateCompleteRequest {
+  prompt: string;
+  targetMarket: string;
+  businessModel: string;
+  techPreferences: string[];
+}
+
+interface Competitor {
+  name: string;
+  description: string;
+  strengths: string[];
+  weaknesses: string[];
+  pricing: string;
+  url: string;
+}
+
+interface CompetitionAnalysis {
+  competitors: Competitor[];
+  marketSize: string;
+  competitionLevel: 'low' | 'medium' | 'high';
+  opportunities: string[];
+}
+
+interface MarketGaps {
+  featureGaps: string[];
+  pricingGaps: string[];
+  targetGaps: string[];
+}
+
+interface UserPersona {
+  name: string;
+  age: number;
+  occupation: string;
+  goals: string[];
+  painPoints: string[];
+}
+
+interface UserJourney {
+  persona: UserPersona;
+  steps: string[];
+  touchpoints: string[];
+}
+
+interface KPI {
+  name: string;
+  description: string;
+  target: string;
+  measurement: string;
+}
+
+interface Experiment {
+  name: string;
+  hypothesis: string;
+  metrics: string[];
+  duration: string;
+}
 
 const router = express.Router();
 const generator = new MVPGenerator(process.env.OPENAI_API_KEY!);
 
 // 🚀 Génération MVP complète
-router.post('/generate-complete', async (req, res) => {
+router.post('/generate-complete', async (req: Request<{}, {}, GenerateCompleteRequest>, res: Response): Promise<void> => {
   try {
     const { prompt, targetMarket, businessModel, techPreferences } = req.body;
     
@@ -18,7 +75,7 @@ router.post('/generate-complete', async (req, res) => {
       techPreferences
     });
 
-    res.json({
+    res.status(200).send({
       success: true,
       mvp,
       downloadUrl: `/api/download/${mvp.projectName}`,
@@ -26,16 +83,14 @@ router.post('/generate-complete', async (req, res) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 📦 Téléchargement du projet complet
-router.get('/download/:projectName', async (req, res) => {
+router.get('/download/:projectName', async (req: Request<{ projectName: string }>, res: Response): Promise<void> => {
   try {
-    // Récupérer le MVP depuis la base/cache
     const mvp = await getMVPFromCache(req.params.projectName);
-    
     const zipBuffer = await generator.createProjectZip(mvp);
     
     res.set({
@@ -43,53 +98,49 @@ router.get('/download/:projectName', async (req, res) => {
       'Content-Disposition': `attachment; filename="${mvp.projectName}.zip"`
     });
     
-    res.send(zipBuffer);
+    res.status(200).send(zipBuffer);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 🚀 Déploiement automatique
-router.post('/deploy/:projectName', async (req, res) => {
+router.post('/deploy/:projectName', async (req: Request<{ projectName: string }>, res: Response): Promise<void> => {
   try {
     const mvp = await getMVPFromCache(req.params.projectName);
-    
-    // Déploiement sur Vercel via API
     const deploymentResult = await deployToVercel(mvp);
     
-    res.json({
+    res.status(200).send({
       success: true,
       url: deploymentResult.url,
       deploymentId: deploymentResult.id
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 🔍 Analyse concurrentielle en temps réel
-router.post('/analyze-competition', async (req, res) => {
+router.post('/analyze-competition', async (req: Request<{}, {}, { idea: string }>, res: Response): Promise<void> => {
   try {
     const { idea } = req.body;
-    
-    // Recherche automatique de concurrents
     const competitors = await analyzeCompetition(idea);
     
-    res.json({
+    res.status(200).send({
       competitors,
       marketGaps: await findMarketGaps(competitors),
       recommendations: await getStrategicRecommendations(competitors, idea)
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 💰 Estimation de revenus et coûts
-router.post('/revenue-estimation', async (req, res) => {
+router.post('/revenue-estimation', async (req: Request<{}, {}, { idea: string; targetMarket: string; businessModel: string }>, res: Response): Promise<void> => {
   try {
     const { idea, targetMarket, businessModel } = req.body;
     
@@ -100,106 +151,70 @@ router.post('/revenue-estimation', async (req, res) => {
       timeframe: '12months'
     });
     
-    res.json(estimation);
+    res.status(200).send(estimation);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 🎯 Génération de personas utilisateur
-router.post('/generate-personas', async (req, res) => {
+router.post('/generate-personas', async (req: Request<{}, {}, { idea: string; targetMarket: string }>, res: Response): Promise<void> => {
   try {
     const { idea, targetMarket } = req.body;
-    
     const personas = await generateUserPersonas(idea, targetMarket);
     
-    res.json({
+    res.status(200).send({
       personas,
       userJourneys: await generateUserJourneys(personas),
       painPoints: await identifyPainPoints(personas)
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 📊 Métriques et KPIs suggérés
-router.post('/suggest-metrics', async (req, res) => {
+router.post('/suggest-metrics', async (req: Request<{}, {}, { idea: string; businessModel: string }>, res: Response): Promise<void> => {
   try {
     const { idea, businessModel } = req.body;
-    
     const metrics = await suggestKPIs(idea, businessModel);
     
-    res.json({
+    res.status(200).send({
       coreMetrics: metrics.core,
       secondaryMetrics: metrics.secondary,
       trackingImplementation: metrics.implementation
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // 🧪 Suggestions d'expérimentations
-router.post('/suggest-experiments', async (req, res) => {
+router.post('/suggest-experiments', async (req: Request<{}, {}, { idea: string; stage?: string }>, res: Response): Promise<void> => {
   try {
     const { idea, stage = 'mvp' } = req.body;
-    
     const experiments = await suggestExperiments(idea, stage);
     
-    res.json({
+    res.status(200).send({
       experiments,
       priorityOrder: experiments.map((exp, idx) => ({ ...exp, priority: idx + 1 })),
       timeline: generateExperimentTimeline(experiments)
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: errorMessage });
+    res.status(500).send({ error: errorMessage });
   }
 });
 
 // Fonctions utilitaires
-async function getMVPFromCache(projectName: string) {
-  // Implémentation du cache (Redis/mémoire)
-  // Pour le prototype, on peut utiliser une Map en mémoire
+async function getMVPFromCache(projectName: string): Promise<MVPData> {
   return mockMVPData;
 }
 
-async function deployToVercel(mvp: any) {
-  // Intégration avec l'API Vercel
-  interface MVPFile {
-    path: string;
-    content: string;
-  }
-
-  interface MVPData {
-    projectName: string;
-    files: MVPFile[];
-    businessPlan: Record<string, unknown>;
-    architecture: Record<string, unknown>;
-    deploymentConfig: {
-      provider: string;
-      config: Record<string, unknown>;
-    };
-    nextSteps: string[];
-  }
-
-  interface VercelDeploymentFile {
-    file: string;
-    data: string;
-  }
-
-  interface VercelDeploymentRequestBody {
-    name: string;
-    files: VercelDeploymentFile[];
-    projectSettings: {
-      framework: string;
-    };
-  }
-
+async function deployToVercel(mvp: MVPData): Promise<{ url: string; id: string }> {
   const response = await fetch('https://api.vercel.com/v13/deployments', {
     method: 'POST',
     headers: {
@@ -207,22 +222,21 @@ async function deployToVercel(mvp: any) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      name: (mvp as MVPData).projectName,
-      files: (mvp as MVPData).files.map((file: MVPFile): VercelDeploymentFile => ({
+      name: mvp.projectName,
+      files: mvp.files.map(file => ({
         file: file.path,
         data: Buffer.from(file.content).toString('base64')
       })),
       projectSettings: {
         framework: 'nextjs'
       }
-    } as VercelDeploymentRequestBody)
+    })
   });
   
   return response.json();
 }
 
-async function analyzeCompetition(idea: string) {
-  // Utilise l'IA pour rechercher et analyser la concurrence
+async function analyzeCompetition(idea: string): Promise<CompetitionAnalysis> {
   const aiAgents = new AIAgentSystem(process.env.OPENAI_API_KEY!);
   
   const analysisPrompt = `
@@ -238,11 +252,10 @@ Format JSON uniquement.
 `;
 
   const result = await aiAgents.generateBusinessPlan(analysisPrompt);
-  return result.data;
+  return result.data as CompetitionAnalysis;
 }
 
-async function findMarketGaps(competitors: any[]) {
-  // Analyse des gaps de marché basée sur les concurrents
+async function findMarketGaps(competitors: Competitor[]): Promise<MarketGaps> {
   return {
     featureGaps: ['AI integration', 'Mobile app', 'Real-time collaboration'],
     pricingGaps: ['Budget tier missing', 'Enterprise features'],
@@ -250,7 +263,7 @@ async function findMarketGaps(competitors: any[]) {
   };
 }
 
-async function getStrategicRecommendations(competitors: any[], idea: string) {
+async function getStrategicRecommendations(competitors: Competitor[], idea: string) {
   return [
     'Focus on AI-powered features for differentiation',
     'Target underserved SMB market segment', 
