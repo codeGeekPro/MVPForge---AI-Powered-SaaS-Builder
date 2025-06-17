@@ -23,6 +23,9 @@ importers:
       '@emotion/styled':
         specifier: ^11.11.0
         version: 11.11.0(@emotion/react@11.11.4(@types/react@18.3.23)(react@18.3.1))(@types/react@18.3.23)(react@18.3.1)
+      '@prisma/client':
+        specifier: ^6.9.0
+        version: 6.9.0(typescript@5.8.3)
       '@types/dotenv':
         specifier: ^8.2.3
         version: 8.2.3
@@ -72,6 +75,9 @@ importers:
       '@types/node':
         specifier: ^20.14.11
         version: 20.19.0
+      '@types/node-fetch':
+        specifier: ^2.6.12
+        version: 2.6.12
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.23
@@ -609,6 +615,18 @@ packages:
 
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
+
+  '@prisma/client@6.9.0':
+    resolution: {integrity: sha512-Gg7j1hwy3SgF1KHrh0PZsYvAaykeR0PaxusnLXydehS96voYCGt1U5zVR31NIouYc63hWzidcrir1a7AIyCsNQ==}
+    engines: {node: '>=18.18'}
+    peerDependencies:
+      prisma: '*'
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+      typescript:
+        optional: true
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -3835,6 +3853,10 @@ snapshots:
       playwright: 1.53.0
 
   '@popperjs/core@2.11.8': {}
+
+  '@prisma/client@6.9.0(typescript@5.8.3)':
+    optionalDependencies:
+      typescript: 5.8.3
 
   '@rtsao/scc@1.1.0': {}
 

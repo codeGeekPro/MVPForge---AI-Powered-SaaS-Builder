@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Heading, Text, VStack, Code, Spinner, Divider } from "@chakra-ui/react";
 
-export default function LogsDashboard() {
+const LogsDashboard = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,4 +28,6 @@ export default function LogsDashboard() {
       )}
     </Box>
   );
-}
+};
+
+export default LogsDashboard;

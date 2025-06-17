@@ -1,8 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import Home from '../../src/app/page';
-// Ajoutez ceci pour que TypeScript reconnaisse les matchers personnalisés
-// Importez les matchers personnalisés pour Jest et TypeScript
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import { describe, it, expect } from '@jest/globals';
 
 describe('Composants principaux', () => {
