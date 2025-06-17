@@ -1,5 +1,5 @@
 // Configuration Jest pour les tests backend
-import { jest } from '@jest/globals';
+// import { jest } from '@jest/globals'; // Not needed, jest is available globally
 
 // Mock des variables d'environnement
 process.env.NODE_ENV = 'test';

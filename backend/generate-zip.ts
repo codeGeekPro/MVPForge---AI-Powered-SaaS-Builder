@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Router } from 'express';
 import archiver from 'archiver';
 import fs from 'fs';
 import { OpenAI } from 'openai';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 // Endpoint : Génération de code téléchargeable (ZIP)
 router.post('/api/ai/generate-code-zip', async (req, res) => {

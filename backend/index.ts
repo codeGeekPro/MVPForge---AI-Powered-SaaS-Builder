@@ -1,5 +1,5 @@
 // Backend Node.js/Express de base pour SaasForge
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { OpenAI } from 'openai';
@@ -16,7 +16,7 @@ import { validateRequest, generateMvpSchema, classifyIdeaSchema } from './valida
 
 dotenv.config();
 
-const app = express();
+const app: Application = express();
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
@@ -35,7 +35,7 @@ const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }: { timestamp: string; level: string; message: string }) => `${timestamp} [${level}] ${message}`)
+    winston.format.printf((info) => `${info.timestamp} [${info.level}] ${info.message}`)
   ),
   transports: [
     new winston.transports.Console(),
@@ -618,7 +618,7 @@ app.get('/api/mvp/history', async (req: express.Request, res: express.Response):
     });
     res.json({ history });
   } catch (e: unknown) {
-    res.status(500).json({ error: 'Erreur lors de la récupération de l'historique', details: e instanceof Error ? e.message : String(e) });
+    res.status(500).json({ error: "Erreur lors de la récupération de l'historique", details: e instanceof Error ? e.message : String(e) });
   }
 });
 

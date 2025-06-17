@@ -1,5 +1,5 @@
 // API routes avancées pour MVPForge
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, Router } from 'express';
 import { MVPGenerator } from './mvp-generator';
 import { AIAgentSystem } from './ai-agents';
 
@@ -60,18 +60,44 @@ interface Experiment {
   duration: string;
 }
 
-const router = express.Router();
+const router: Router = express.Router();
 const generator = new MVPGenerator(process.env.OPENAI_API_KEY!);
+
+// Définition de l'interface MVPData pour typer les projets MVP générés
+interface MVPFile {
+  path: string;
+  content: string;
+  type?: 'component' | 'page' | 'api' | 'config' | 'database';
+}
+
+interface MVPData {
+  projectName: string;
+  files: MVPFile[];
+  businessPlan: any;
+  architecture: any;
+  deploymentConfig: {
+    provider: string;
+    config: any;
+    env?: Record<string, any>;
+  };
+  nextSteps: string[];
+}
 
 // 🚀 Génération MVP complète
 router.post('/generate-complete', async (req: Request<{}, {}, GenerateCompleteRequest>, res: Response): Promise<void> => {
   try {
     const { prompt, targetMarket, businessModel, techPreferences } = req.body;
     
+    // Cast businessModel to the allowed union type or undefined if not valid
+    const allowedBusinessModels = ['saas', 'marketplace', 'freemium', 'subscription'] as const;
+    const safeBusinessModel = allowedBusinessModels.includes(businessModel as any)
+      ? (businessModel as 'saas' | 'marketplace' | 'freemium' | 'subscription')
+      : undefined;
+
     const mvp = await generator.generateCompleteMVP({
       idea: prompt,
       targetMarket,
-      businessModel,
+      businessModel: safeBusinessModel,
       techPreferences
     });
 
@@ -91,7 +117,22 @@ router.post('/generate-complete', async (req: Request<{}, {}, GenerateCompleteRe
 router.get('/download/:projectName', async (req: Request<{ projectName: string }>, res: Response): Promise<void> => {
   try {
     const mvp = await getMVPFromCache(req.params.projectName);
-    const zipBuffer = await generator.createProjectZip(mvp);
+    // Adaptation: ajoute le champ 'type' requis à chaque fichier avec une valeur valide
+    const filesWithType = mvp.files.map(file => ({
+      ...file,
+      type: (file.type && ['component', 'page', 'api', 'config', 'database'].includes(file.type))
+        ? file.type
+        : 'component' as 'component' // ou choisissez dynamiquement selon le contexte
+    }));
+    const mvpWithTypedFiles = { 
+      ...mvp, 
+      files: filesWithType,
+      deploymentConfig: {
+        ...mvp.deploymentConfig,
+        env: mvp.deploymentConfig.env ?? {} // Ajoute 'env' si absent
+      }
+    };
+    const zipBuffer = await generator.createProjectZip(mvpWithTypedFiles);
     
     res.set({
       'Content-Type': 'application/zip',
@@ -130,8 +171,8 @@ router.post('/analyze-competition', async (req: Request<{}, {}, { idea: string }
     
     res.status(200).send({
       competitors,
-      marketGaps: await findMarketGaps(competitors),
-      recommendations: await getStrategicRecommendations(competitors, idea)
+      marketGaps: await findMarketGaps(competitors.competitors),
+      recommendations: await getStrategicRecommendations(competitors.competitors, idea)
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -210,6 +251,30 @@ router.post('/suggest-experiments', async (req: Request<{}, {}, { idea: string; 
 });
 
 // Fonctions utilitaires
+const mockMVPData: MVPData = {
+  projectName: 'sample-mvp',
+  files: [
+    // Exemple de fichier avec le champ 'type' correct
+    {
+      path: 'README.md',
+      content: '# Sample MVP',
+      type: 'component'
+    }
+  ],
+  businessPlan: {},
+  architecture: {},
+  deploymentConfig: {
+    provider: 'vercel',
+    config: {},
+    env: {} // Ajoute la propriété 'env' requise
+  },
+  nextSteps: [
+    'Customize your MVP',
+    'Deploy to production',
+    'Monitor user feedback'
+  ]
+};
+
 async function getMVPFromCache(projectName: string): Promise<MVPData> {
   return mockMVPData;
 }
@@ -233,7 +298,13 @@ async function deployToVercel(mvp: MVPData): Promise<{ url: string; id: string }
     })
   });
   
-  return response.json();
+  const data = await response.json() as { url?: unknown; id?: unknown };
+  // Validation simple du type attendu
+  if (typeof data.url === 'string' && typeof data.id === 'string') {
+    return { url: data.url, id: data.id };
+  } else {
+    throw new Error('Invalid deployment response from Vercel API');
+  }
 }
 
 async function analyzeCompetition(idea: string): Promise<CompetitionAnalysis> {
@@ -371,54 +442,34 @@ async function suggestExperiments(idea: string, stage: string) {
   const experiments = [
     {
       name: 'Landing Page A/B Test',
-      hypothesis: 'Clearer value proposition increases sign-ups by 20%',
-      duration: '2 weeks',
-      effort: 'Low',
-      impact: 'High'
+      hypothesis: 'A new headline will increase signups',
+      metrics: ['Conversion Rate'],
+      duration: '2 weeks'
     },
     {
       name: 'Onboarding Flow Optimization',
-      hypothesis: 'Simplified onboarding reduces drop-off by 30%',
-      duration: '3 weeks',
-      effort: 'Medium',
-      impact: 'High'
+      hypothesis: 'Reducing steps will improve activation',
+      metrics: ['Activation Rate'],
+      duration: '1 week'
     },
     {
-      name: 'Pricing Strategy Test',
-      hypothesis: 'Tiered pricing increases revenue per user',
-      duration: '4 weeks',
-      effort: 'Medium',
-      impact: 'Very High'
+      name: 'Pricing Page Experiment',
+      hypothesis: 'Adding testimonials increases paid conversions',
+      metrics: ['Paid Conversion Rate'],
+      duration: '2 weeks'
     }
   ];
-
   return experiments;
 }
 
 function generateExperimentTimeline(experiments: any[]) {
   return {
-    week1: ['Setup landing page test'],
-    week2: ['Analyze landing page results'],
-    week3: ['Start onboarding optimization'],
-    week4: ['Launch pricing test'],
-    week6: ['Analyze all results and iterate']
+    timeline: experiments.map((exp, idx) => ({
+      name: exp.name,
+      start: `Week ${idx * 2 + 1}`,
+      end: `Week ${idx * 2 + 2}`
+    }))
   };
 }
-
-const mockMVPData = {
-  projectName: 'sample-mvp',
-  files: [],
-  businessPlan: {},
-  architecture: {},
-  deploymentConfig: {
-    provider: 'vercel',
-    config: {}
-  },
-  nextSteps: [
-    'Customize your MVP',
-    'Deploy to production',
-    'Monitor user feedback'
-  ]
-};
 
 export default router;
