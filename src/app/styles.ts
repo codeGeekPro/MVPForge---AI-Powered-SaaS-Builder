@@ -14,36 +14,36 @@ const cardStyle: SystemStyleObject = {
 
 export const styles = {
   primaryButton: {
-    size: "lg",
-    colorScheme: "purple",
-    fontWeight: "bold",
+    size: "lg" as const,
+    colorScheme: "purple" as const,
+    fontWeight: "bold" as const,
     px: 8,
     py: 6,
-    borderRadius: "xl",
-    boxShadow: "lg",
+    borderRadius: "xl" as const,
+    boxShadow: "lg" as const,
     _hover: {
       transform: "translateY(-2px)",
-      boxShadow: "xl",
+      boxShadow: "xl" as const,
     },
     transition: "all 0.2s",
   },
 
   secondaryButton: {
-    size: "md",
-    variant: "outline",
-    colorScheme: "purple",
+    size: "md" as const,
+    variant: "outline" as const,
+    colorScheme: "purple" as const,
     px: 6,
     py: 4,
-    borderRadius: "lg",
+    borderRadius: "lg" as const,
   },
 
   sectionHeading: {
-    size: "2xl",
+    size: "2xl" as const,
     color: "purple.700",
     mb: 8,
-    textAlign: "center",
-    fontWeight: "extrabold",
-    letterSpacing: "tight",
+    textAlign: "center" as const,
+    fontWeight: "extrabold" as const,
+    letterSpacing: "tight" as const,
   },
 
   card: cardStyle,
@@ -51,24 +51,24 @@ export const styles = {
   metricCard: {
     bg: "whiteAlpha.900",
     p: 4,
-    borderRadius: "lg",
-    shadow: "md",
-    textAlign: "center",
+    borderRadius: "lg" as const,
+    shadow: "md" as const,
+    textAlign: "center" as const,
   },
 
   badge: {
     px: 3,
     py: 1,
-    borderRadius: "full",
-    fontWeight: "bold",
-    fontSize: "sm",
+    borderRadius: "full" as const,
+    fontWeight: "bold" as const,
+    fontSize: "sm" as const,
   },
 
   header: {
-    bgGradient: "linear(to-r, purple.600, blue.500)",
+    bgGradient: "linear(to-r, purple.600, blue.500)" as const,
     py: 6,
     px: 8,
-    boxShadow: "lg",
+    boxShadow: "lg" as const,
   },
 
   mainContainer: {
@@ -80,24 +80,24 @@ export const styles = {
   heroSection: {
     spacing: 8,
     py: 16,
-    textAlign: "center",
+    textAlign: "center" as const,
   },
 
   heroTitle: {
-    size: "3xl",
-    bgGradient: "linear(to-r, purple.600, blue.500)",
-    bgClip: "text",
-    fontWeight: "extrabold",
+    size: "3xl" as const,
+    bgGradient: "linear(to-r, purple.600, blue.500)" as const,
+    bgClip: "text" as const,
+    fontWeight: "extrabold" as const,
   },
 
   heroSubtitle: {
-    fontSize: "2xl",
+    fontSize: "2xl" as const,
     color: "gray.600",
     maxW: "800px",
   },
 
   heroDescription: {
-    fontSize: "xl",
+    fontSize: "xl" as const,
     color: "gray.500",
     maxW: "600px",
   },
@@ -109,12 +109,12 @@ export const styles = {
 
   pricingCard: {
     ...cardStyle,
-    align: "center",
+    align: "center" as const,
   },
 
   popularPricingCard: {
     ...cardStyle,
-    align: "center",
+    align: "center" as const,
     border: "2px solid",
     borderColor: "purple.200",
     bg: "purple.50",

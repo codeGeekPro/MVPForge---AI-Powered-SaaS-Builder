@@ -105,25 +105,25 @@ export default function Home() {
   const [multiAgents, setMultiAgents] = useState<any>(null);
   const [experiments, setExperiments] = useState<any>(null);
 
-  // Métriques simulées pour affichage
-  const [metrics] = useState({
-    users: 1245,
-    mrr: 890,
-    uptime: "99.99%",
-    builds: 312,
-  });
+  // Métriques simulées
+  const metrics = {
+    users: "2,847",
+    mrr: "€12,450",
+    uptime: "99.9%",
+    builds: "156"
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
     setResult("");
     try {
-      const res = await fetch("http://localhost:4000/api/ai/generate", {
+      const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
-      setResult(data.result);
+      setResult(data.result || data.message || "MVP généré avec succès !");
     } catch (e) {
       setResult("Erreur lors de la génération IA");
     }
@@ -134,15 +134,15 @@ export default function Home() {
     setLoading(true);
     setMultiAgents(null);
     try {
-      const res = await fetch("http://localhost:4000/api/ai/multi-agents", {
+      const res = await fetch("/api/ai/multi-agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: prompt }),
+        body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
       setMultiAgents(data);
     } catch (e) {
-      setMultiAgents({ error: "Erreur multi-agents" });
+      setMultiAgents({ error: "Erreur lors de l'analyse multi-agents" });
     }
     setLoading(false);
   };
@@ -151,25 +151,25 @@ export default function Home() {
     setLoading(true);
     setExperiments(null);
     try {
-      const res = await fetch("http://localhost:4000/api/ai/experiments", {
+      const res = await fetch("/api/ai/experiments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: prompt }),
+        body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
       setExperiments(data);
     } catch (e) {
-      setExperiments({ error: "Erreur expérimentations" });
+      setExperiments({ error: "Erreur lors des expérimentations" });
     }
     setLoading(false);
   };
 
   const handleDownloadCode = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/ai/generate-code-zip", {
+      const res = await fetch("/api/ai/download", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: prompt }),
+        body: JSON.stringify({ prompt }),
       });
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -177,7 +177,6 @@ export default function Home() {
       a.href = url;
       a.download = 'mvp-code.zip';
       a.click();
-      window.URL.revokeObjectURL(url);
     } catch (e) {
       console.error("Erreur téléchargement:", e);
     }
@@ -187,7 +186,7 @@ export default function Home() {
     setLoading(true);
     setAnalysis(null);
     try {
-      const res = await fetch("http://localhost:4000/api/ai/classify", {
+      const res = await fetch("/api/ai/classify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idea: prompt }),
@@ -208,6 +207,106 @@ export default function Home() {
 
   // Gestion du mode clair/sombre Chakra UI
   const { colorMode, toggleColorMode } = useColorMode();
+  
+  // Sécurisation des styles - isolation des propriétés problématiques
+  const safeCardStyle = {
+    bg: "whiteAlpha.900",
+    p: 6,
+    borderRadius: "xl",
+    shadow: "lg",
+    transition: "all 0.2s",
+    _hover: {
+      transform: "translateY(-2px)",
+      shadow: "xl",
+    },
+  };
+
+  const safeHeaderStyle = {
+    bgGradient: "linear(to-r, purple.600, blue.500)",
+    py: 6,
+    px: 8,
+    boxShadow: "lg",
+  };
+
+  const safeMainContainerStyle = {
+    maxW: "1400px",
+    mx: "auto",
+    px: 8,
+  };
+
+  const safeHeroSectionStyle = {
+    spacing: 8,
+    py: 16,
+    textAlign: "center" as const,
+  };
+
+  const safeSectionHeadingStyle = {
+    size: "2xl",
+    color: "purple.700",
+    mb: 8,
+    textAlign: "center" as const,
+    fontWeight: "extrabold",
+    letterSpacing: "tight",
+  };
+
+  const safeFeatureGridStyle = {
+    columns: [1, 3],
+    spacing: 8,
+  };
+
+  const safeMetricCardStyle = {
+    bg: "whiteAlpha.900",
+    p: 4,
+    borderRadius: "lg",
+    shadow: "md",
+    textAlign: "center" as const,
+  };
+
+  const safeBadgeStyle = {
+    px: 3,
+    py: 1,
+    borderRadius: "full",
+    fontWeight: "bold",
+    fontSize: "sm",
+  };
+
+  const safePricingCardStyle = {
+    ...safeCardStyle,
+    align: "center" as const,
+  };
+
+  const safePopularPricingCardStyle = {
+    ...safeCardStyle,
+    align: "center" as const,
+    border: "2px solid",
+    borderColor: "purple.200",
+    bg: "purple.50",
+  };
+
+  const safePrimaryButtonStyle = {
+    size: "lg",
+    colorScheme: "purple",
+    fontWeight: "bold",
+    px: 8,
+    py: 6,
+    borderRadius: "xl",
+    boxShadow: "lg",
+    _hover: {
+      transform: "translateY(-2px)",
+      boxShadow: "xl",
+    },
+    transition: "all 0.2s",
+  };
+
+  const safeSecondaryButtonStyle = {
+    size: "md",
+    variant: "outline",
+    colorScheme: "purple",
+    px: 6,
+    py: 4,
+    borderRadius: "lg",
+  };
+
   // Dashboard de résultats
   return (
     <>
@@ -216,8 +315,8 @@ export default function Home() {
         <meta name="description" content="Créez un MVP SaaS complet en 60 secondes grâce à l'IA. Sans coder. Sans attendre. Essayez SaasForge gratuitement !" />
         <meta name="keywords" content="SaaS, MVP, IA, générateur, startup, no-code, prototype, hackathon" />
       </Head>
-      <Box as="header" {...styles.header} role="banner">
-        <Flex align="center" justify="space-between" {...styles.mainContainer}>
+      <Box as="header" {...safeHeaderStyle} role="banner">
+        <Flex align="center" justify="space-between" {...safeMainContainerStyle}>
           <HStack spacing={4}>
             <Image 
               src="/logo.svg" 
@@ -238,38 +337,38 @@ export default function Home() {
           </nav>
         </Flex>
       </Box>
-      <Box as="main" role="main" tabIndex={-1} aria-label="Contenu principal" {...styles.mainContainer}>
+      <Box as="main" role="main" tabIndex={-1} aria-label="Contenu principal" {...safeMainContainerStyle}>
         {/* Hero Section */}
-        <VStack {...styles.heroSection} role="banner" aria-label="Section principale">
-          <Heading as="h1" {...styles.heroTitle}>
+        <VStack {...safeHeroSectionStyle} role="banner" aria-label="Section principale">
+          <Heading as="h1" size={styles.heroTitle.size} bgGradient={styles.heroTitle.bgGradient} bgClip={styles.heroTitle.bgClip} fontWeight={styles.heroTitle.fontWeight}>
             {t.title}
           </Heading>
-          <Text {...styles.heroSubtitle}>
+          <Text fontSize={styles.heroSubtitle.fontSize} color={styles.heroSubtitle.color} maxW={styles.heroSubtitle.maxW}>
             {t.tagline}
           </Text>
-          <Text {...styles.heroDescription}>
+          <Text fontSize={styles.heroDescription.fontSize} color={styles.heroDescription.color} maxW={styles.heroDescription.maxW}>
             {t.subtitle}
           </Text>
         </VStack>
 
         {/* Section Comment ça marche */}
         <Box mb={16} role="region" aria-label="Comment ça marche">
-          <Heading {...styles.sectionHeading}>
+          <Heading {...safeSectionHeadingStyle}>
             {t.howItWorks}
           </Heading>
-          <SimpleGrid {...styles.featureGrid}>
-            <VStack {...styles.card} role="article" aria-label="Étape 1">
-              <Badge {...styles.badge} colorScheme="purple">1</Badge>
+          <SimpleGrid {...safeFeatureGridStyle}>
+            <VStack {...safeCardStyle} role="article" aria-label="Étape 1">
+              <Badge {...safeBadgeStyle} colorScheme="purple">1</Badge>
               <Text fontSize="xl" fontWeight="bold">{t.step1}</Text>
               <Text fontSize="md" color="gray.600">{t.step1Desc}</Text>
             </VStack>
-            <VStack {...styles.card} role="article" aria-label="Étape 2">
-              <Badge {...styles.badge} colorScheme="blue">2</Badge>
+            <VStack {...safeCardStyle} role="article" aria-label="Étape 2">
+              <Badge {...safeBadgeStyle} colorScheme="blue">2</Badge>
               <Text fontSize="xl" fontWeight="bold">{t.step2}</Text>
               <Text fontSize="md" color="gray.600">{t.step2Desc}</Text>
             </VStack>
-            <VStack {...styles.card} role="article" aria-label="Étape 3">
-              <Badge {...styles.badge} colorScheme="green">3</Badge>
+            <VStack {...safeCardStyle} role="article" aria-label="Étape 3">
+              <Badge {...safeBadgeStyle} colorScheme="green">3</Badge>
               <Text fontSize="xl" fontWeight="bold">{t.step3}</Text>
               <Text fontSize="md" color="gray.600">{t.step3Desc}</Text>
             </VStack>
@@ -278,7 +377,7 @@ export default function Home() {
 
         {/* Section Génération */}
         <Box mb={16} role="region" aria-label="Générateur de MVP">
-          <VStack spacing={8} {...styles.card}>
+          <VStack spacing={8} {...safeCardStyle}>
             <Heading size="xl" color="purple.700" textAlign="center">
               {t.describe}
             </Heading>
@@ -296,7 +395,7 @@ export default function Home() {
             />
             <HStack spacing={4} w="full">
               <Button 
-                {...styles.primaryButton} 
+                {...safePrimaryButtonStyle} 
                 onClick={handleGenerate} 
                 isLoading={loading} 
                 flex={1}
@@ -305,7 +404,7 @@ export default function Home() {
                 {t.generateMvp}
               </Button>
               <Button 
-                {...styles.secondaryButton} 
+                {...safeSecondaryButtonStyle} 
                 onClick={handleRandomIdea}
                 aria-label="Obtenir une idée aléatoire"
               >
@@ -317,23 +416,23 @@ export default function Home() {
 
         {/* Section Métriques */}
         <Box mb={16} role="region" aria-label="Tableau de bord analytique">
-          <Heading {...styles.sectionHeading}>
+          <Heading {...safeSectionHeadingStyle}>
             {t.analytics}
           </Heading>
           <SimpleGrid columns={[2, 4]} spacing={6}>
-            <VStack {...styles.metricCard} role="article" aria-label="Nombre d'utilisateurs">
+            <VStack {...safeMetricCardStyle} role="article" aria-label="Nombre d'utilisateurs">
               <Text fontSize="3xl" fontWeight="bold" color="purple.600">{metrics.users}</Text>
               <Text fontSize="sm" color="gray.500">Utilisateurs</Text>
             </VStack>
-            <VStack {...styles.metricCard} role="article" aria-label="Revenu mensuel récurrent">
+            <VStack {...safeMetricCardStyle} role="article" aria-label="Revenu mensuel récurrent">
               <Text fontSize="3xl" fontWeight="bold" color="green.600">{metrics.mrr} €</Text>
               <Text fontSize="sm" color="gray.500">MRR simulé</Text>
             </VStack>
-            <VStack {...styles.metricCard} role="article" aria-label="Taux de disponibilité">
+            <VStack {...safeMetricCardStyle} role="article" aria-label="Taux de disponibilité">
               <Text fontSize="3xl" fontWeight="bold" color="blue.600">{metrics.uptime}</Text>
               <Text fontSize="sm" color="gray.500">Disponibilité</Text>
             </VStack>
-            <VStack {...styles.metricCard} role="article" aria-label="Nombre de builds">
+            <VStack {...safeMetricCardStyle} role="article" aria-label="Nombre de builds">
               <Text fontSize="3xl" fontWeight="bold" color="orange.600">{metrics.builds}</Text>
               <Text fontSize="sm" color="gray.500">Builds générés</Text>
             </VStack>
@@ -342,30 +441,30 @@ export default function Home() {
 
         {/* Section Plans et Tarifs */}
         <Box mb={16} role="region" aria-label="Plans et tarifs">
-          <Heading {...styles.sectionHeading}>
+          <Heading {...safeSectionHeadingStyle}>
             {t.plans}
           </Heading>
-          <SimpleGrid {...styles.featureGrid}>
-            <VStack {...styles.pricingCard} role="article" aria-label="Plan Découverte">
-              <Badge {...styles.badge} colorScheme="gray">Gratuit</Badge>
+          <SimpleGrid {...safeFeatureGridStyle}>
+            <VStack {...safePricingCardStyle} role="article" aria-label="Plan Découverte">
+              <Badge {...safeBadgeStyle} colorScheme="gray">Gratuit</Badge>
               <Heading size="lg">Découverte</Heading>
               <Text fontSize="md" color="gray.600">Générez 3 MVP par mois</Text>
               <Text fontSize="3xl" fontWeight="bold">0€</Text>
-              <Button {...styles.secondaryButton} aria-label="Commencer avec le plan Découverte">Commencer</Button>
+              <Button {...safeSecondaryButtonStyle} aria-label="Commencer avec le plan Découverte">Commencer</Button>
             </VStack>
-            <VStack {...styles.popularPricingCard} role="article" aria-label="Plan Pro">
-              <Badge {...styles.badge} colorScheme="purple">Populaire</Badge>
+            <VStack {...safePopularPricingCardStyle} role="article" aria-label="Plan Pro">
+              <Badge {...safeBadgeStyle} colorScheme="purple">Populaire</Badge>
               <Heading size="lg">Pro</Heading>
               <Text fontSize="md" color="gray.600">MVP illimités, support prioritaire</Text>
               <Text fontSize="3xl" fontWeight="bold">19€/mois</Text>
-              <Button {...styles.primaryButton} aria-label="S'abonner au plan Pro">S'abonner</Button>
+              <Button {...safePrimaryButtonStyle} aria-label="S'abonner au plan Pro">S'abonner</Button>
             </VStack>
-            <VStack {...styles.pricingCard} role="article" aria-label="Plan Business">
-              <Badge {...styles.badge} colorScheme="orange">Entreprise</Badge>
+            <VStack {...safePricingCardStyle} role="article" aria-label="Plan Business">
+              <Badge {...safeBadgeStyle} colorScheme="orange">Entreprise</Badge>
               <Heading size="lg">Business</Heading>
               <Text fontSize="md" color="gray.600">API, intégrations avancées, équipe</Text>
               <Text fontSize="3xl" fontWeight="bold">49€/mois</Text>
-              <Button {...styles.secondaryButton} aria-label="Contactez-nous pour le plan Business">Contactez-nous</Button>
+              <Button {...safeSecondaryButtonStyle} aria-label="Contactez-nous pour le plan Business">Contactez-nous</Button>
             </VStack>
           </SimpleGrid>
         </Box>
