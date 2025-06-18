@@ -24,14 +24,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run frontend tests
+        run: pnpm test:frontend
+
+      - name: Build frontend
+        run: pnpm build
 
       - name: Deploy to Vercel
-        uses: vercel/vercel-action@v2
+        uses: vercel/action@v1
         with:
-          token: ${{ secrets.VERCEL_TOKEN }}
-          org-id: ${{ secrets.VERCEL_ORG_ID }}
-          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          scope: ${{ secrets.VERCEL_SCOPE }} # 👈 Doit être un slug (pas un ID)
-          prod: true
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          vercel-args: '--prod'
