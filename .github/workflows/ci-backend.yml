@@ -12,6 +12,11 @@ jobs:
     defaults:
       run:
         working-directory: ./backend
+    env:
+      DATABASE_URL: "file:./test.db"
+      NODE_ENV: "test"
+      JWT_SECRET: "test-secret"
+      OPENAI_API_KEY: "test-key"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -23,6 +28,8 @@ jobs:
         run: npm install -g pnpm
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm prisma generate
       - name: Build TypeScript
         run: pnpm build
       - name: Run tests

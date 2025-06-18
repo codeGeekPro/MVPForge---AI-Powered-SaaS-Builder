@@ -32,6 +32,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      node-fetch:
+        specifier: ^2.7.0
+        version: 2.7.0(encoding@0.1.13)
       openai:
         specifier: ^4.56.0
         version: 4.104.0(encoding@0.1.13)(zod@3.25.65)
@@ -72,6 +75,9 @@ importers:
       '@types/node':
         specifier: ^20.14.11
         version: 20.19.1
+      '@types/node-fetch':
+        specifier: ^2.6.12
+        version: 2.6.12
       '@types/sequelize':
         specifier: ^4.28.20
         version: 4.28.20
