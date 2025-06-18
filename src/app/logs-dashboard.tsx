@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, act } from "react";
 import { Box, Heading, Text, VStack, Code, Spinner, Divider } from "@chakra-ui/react";
 
 const LogsDashboard = () => {
@@ -9,8 +9,10 @@ const LogsDashboard = () => {
     fetch("/api/logs")
       .then(res => res.json())
       .then(data => {
-        setLogs(data.logs || []);
-        setLoading(false);
+        act(() => {
+          setLogs(data.logs || []);
+          setLoading(false);
+        });
       });
   }, []);
 

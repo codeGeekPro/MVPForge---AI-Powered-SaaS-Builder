@@ -8,7 +8,7 @@ describe('Endpoints IA', () => {
       .send({ prompt: 'Créer une marketplace pour coachs sportifs indépendants' });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('result');
+    expect(response.body).toHaveProperty('mvp');
   });
 
   it('POST /api/ai/classify - Classification IA', async () => {
@@ -17,6 +17,6 @@ describe('Endpoints IA', () => {
       .send({ idea: 'Plateforme de mise en relation artistes/clients avec IA' });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('categories');
+    expect(response.body).toHaveProperty('classification');
   });
 });

@@ -1,4 +1,9 @@
 import '@testing-library/jest-dom'
+import 'whatwg-fetch';
+
+// Polyfill TextEncoder and TextDecoder
+global.TextEncoder = require('util').TextEncoder;
+global.TextDecoder = require('util').TextDecoder;
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({

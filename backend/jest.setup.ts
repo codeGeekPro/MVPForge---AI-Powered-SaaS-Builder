@@ -14,6 +14,29 @@ jest.mock('@prisma/client', () => ({
   })),
 }));
 
+// Mock de Sequelize pour éviter les problèmes de SQLite
+jest.mock('sequelize', () => {
+  const mSequelize = {
+    authenticate: jest.fn().mockResolvedValue(undefined),
+    sync: jest.fn().mockResolvedValue(undefined),
+    close: jest.fn().mockResolvedValue(undefined),
+  };
+  const actualSequelize = jest.requireActual('sequelize');
+  return {
+    ...actualSequelize,
+    Sequelize: jest.fn(() => mSequelize),
+  };
+});
+
+// Mock du FreeAPIManager
+jest.mock('./free-api-manager', () => ({
+  FreeAPIManager: jest.fn().mockImplementation(() => ({
+    generateWithFallback: jest.fn().mockResolvedValue('Mocked AI response'),
+    validateEmail: jest.fn().mockResolvedValue({ is_valid: true, score: 0.9 }),
+    getNews: jest.fn().mockResolvedValue([]),
+  })),
+}));
+
 // Mock d'OpenAI pour les tests
 jest.mock('openai', () => ({
   OpenAI: jest.fn().mockImplementation(() => ({
@@ -26,3 +49,36 @@ jest.mock('openai', () => ({
     },
   })),
 }));
+
+// Mock de winston pour les logs
+jest.mock('winston', () => ({
+  createLogger: jest.fn(() => ({
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+  })),
+  format: {
+    combine: jest.fn(),
+    timestamp: jest.fn(),
+    printf: jest.fn(),
+  },
+  transports: {
+    Console: jest.fn(),
+    File: jest.fn(),
+  },
+}));
+
+// Mock de express-rate-limit
+jest.mock('express-rate-limit', () => {
+  return jest.fn(() => (req: any, res: any, next: any) => next());
+});
+
+// Mock de archiver
+jest.mock('archiver', () => {
+  return jest.fn(() => ({
+    pipe: jest.fn().mockReturnThis(),
+    append: jest.fn().mockReturnThis(),
+    finalize: jest.fn().mockResolvedValue(undefined),
+  }));
+});

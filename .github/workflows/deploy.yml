@@ -28,10 +28,10 @@ jobs:
         run: pnpm test
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
+        uses: vercel/vercel-action@v2
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: '--prod'
-          working-directory: ./
-          vercel-project-name: mvpforge
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_SCOPE }} # 👈 Doit être un slug (pas un ID)
+          prod: true
