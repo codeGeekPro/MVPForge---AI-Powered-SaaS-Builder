@@ -8,6 +8,7 @@ import archiver from 'archiver';
 import { FreeAPIManager } from './free-api-manager';
 import rateLimit from 'express-rate-limit';
 import { logger, requestLogger, errorHandler } from './lib/monitoring';
+import { correlationMiddleware } from './middleware/request-id';
 import { metricsMiddleware } from './lib/metrics';
 import healthRouter from './routes/health';
 import { PrismaClient } from '@prisma/client';
@@ -35,10 +36,13 @@ app.use(bodyParser.json());
 const apiManager = new FreeAPIManager();
 const prisma = new PrismaClient();
 
+// Corrélation des requêtes (injection X-Request-Id + logger enfant + tag Sentry)
+app.use(correlationMiddleware);
+
 // Rate limiting avancé
 app.use(ipRateLimit);
 
-// Logs & métriques
+// Logs & métriques (après corrélation pour inclure requestId)
 app.use(requestLogger);
 app.use(metricsMiddleware);
 

@@ -31,7 +31,9 @@ export const logger = pino({
 
 // Middleware de logging basique (requêtes)
 export function requestLogger(req: Request, _res: Response, next: NextFunction) {
-  logger.info({ method: req.method, url: req.url, ip: req.ip, ua: req.headers['user-agent'] }, 'HTTP request');
+  const requestId = (req as any).requestId;
+  const log = (req as any).log || logger;
+  log.info({ method: req.method, url: req.url, ip: req.ip, ua: req.headers['user-agent'], requestId }, 'HTTP request');
   next();
 }
 
@@ -40,7 +42,9 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
   const errorId = Sentry.captureException(err);
 
   const userId = (req as any)?.user?.id || null;
-  logger.error(
+  const requestId = (req as any).requestId;
+  const log = (req as any).log || logger;
+  log.error(
     {
       errorId,
       error: err.message,
@@ -48,6 +52,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
       path: req.path,
       method: req.method,
       userId,
+      requestId,
     },
     'Unhandled error'
   );
@@ -56,6 +61,7 @@ export function errorHandler(err: Error, req: Request, res: Response, _next: Nex
     error: 'INTERNAL_ERROR',
     message: "Une erreur est survenue",
     errorId, // Pour le support
+    requestId,
     support: 'support@mvpforge.com',
   });
 }
