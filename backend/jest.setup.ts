@@ -11,22 +11,23 @@ jest.mock('@prisma/client', () => ({
   PrismaClient: jest.fn().mockImplementation(() => ({
     $connect: jest.fn(),
     $disconnect: jest.fn(),
+    $queryRaw: jest.fn().mockResolvedValue(1),
+    mvp: {
+      count: jest.fn().mockResolvedValue(0),
+      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      create: jest.fn().mockImplementation(({ data }: any) => ({ id: 'mvp1', createdAt: new Date().toISOString(), ...data })),
+      findMany: jest.fn().mockResolvedValue([])
+    },
+    user: {
+      count: jest.fn().mockResolvedValue(0),
+      findUnique: jest.fn().mockResolvedValue({ id: 'user1', email: 'demo@mvpforge.com' }),
+      create: jest.fn().mockImplementation(({ data }: any) => ({ id: 'user1', ...data }))
+    },
   })),
 }));
 
 // Mock de Sequelize pour éviter les problèmes de SQLite
-jest.mock('sequelize', () => {
-  const mSequelize = {
-    authenticate: jest.fn().mockResolvedValue(undefined),
-    sync: jest.fn().mockResolvedValue(undefined),
-    close: jest.fn().mockResolvedValue(undefined),
-  };
-  const actualSequelize = jest.requireActual('sequelize');
-  return {
-    ...actualSequelize,
-    Sequelize: jest.fn(() => mSequelize),
-  };
-});
+// Plus de Sequelize (mono-ORM Prisma)
 
 // Mock du FreeAPIManager
 jest.mock('./free-api-manager', () => ({
@@ -51,23 +52,55 @@ jest.mock('openai', () => ({
 }));
 
 // Mock de winston pour les logs
-jest.mock('winston', () => ({
-  createLogger: jest.fn(() => ({
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
-  })),
-  format: {
-    combine: jest.fn(),
-    timestamp: jest.fn(),
-    printf: jest.fn(),
-  },
-  transports: {
-    Console: jest.fn(),
-    File: jest.fn(),
-  },
+// Mock de Sentry & Pino pour les tests
+jest.mock('@sentry/node', () => ({
+  init: jest.fn(),
+  captureException: jest.fn().mockReturnValue('test-error-id'),
 }));
+
+jest.mock('@sentry/profiling-node', () => ({
+  nodeProfilingIntegration: jest.fn(() => ({})),
+}));
+
+jest.mock('pino', () => {
+  const fakeLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() };
+  const pino = jest.fn(() => fakeLogger);
+  return pino;
+});
+
+// Mock prom-client
+jest.mock('prom-client', () => {
+  class DummyMetric {
+    public config: any;
+    public hashMap: Record<string, { value: number }>;
+    constructor(config: any) {
+      this.config = config;
+      // Simule le stockage interne utilisé par prom-client pour .metrics()
+      this.hashMap = { '': { value: 0 } };
+    }
+    inc() { this.hashMap[''].value += 1; }
+    observe(_labels?: any, _value?: number) {}
+    set(_value?: number) {}
+  }
+  class MockRegistry {
+    contentType = 'text/plain; version=0.0.4; charset=utf-8';
+    registerMetric = jest.fn();
+    metrics = jest.fn().mockResolvedValue('http_requests_total 0\n');
+    setDefaultLabels = jest.fn();
+  }
+  const defaultExport = {
+    Registry: MockRegistry,
+    collectDefaultMetrics: jest.fn(),
+  };
+  return {
+    Counter: DummyMetric,
+    Gauge: DummyMetric,
+    Histogram: DummyMetric,
+    Registry: MockRegistry,
+    collectDefaultMetrics: jest.fn(),
+    default: defaultExport,
+  };
+});
 
 // Mock de express-rate-limit
 jest.mock('express-rate-limit', () => {

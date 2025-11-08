@@ -18,7 +18,7 @@ Transformez votre idée en MVP SaaS complet en moins de temps qu'il ne faut pour
 - Accessibilité et SEO optimisés
 - Tests unitaires (Jest/Supertest)
 - CI/CD GitHub Actions
-- Rate limiting et monitoring (Winston)
+- Rate limiting et monitoring (Sentry + Pino)
 
 ## Installation
 ```bash
@@ -34,12 +34,42 @@ pnpm dev:all
 - Backend API : http://localhost:4000
 
 ## Configuration
-- Placez vos clés API dans `backend/.env` :
-  ```env
-  OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  OPENROUTER_API_KEY=sk-xxxx
-  DATABASE_URL="file:./dev.db"
-  ```
+- Placez vos clés API dans `backend/.env` (utilisez `backend/.env.example` comme modèle) :
+
+## Documentation
+Une documentation détaillée est disponible dans le dossier `docs/` :
+
+- `docs/architecture.md` : Vue d'ensemble technique
+- `docs/monitoring-observabilité.md` : Sentry, Pino, Prometheus, alertes
+- `docs/environment.md` : Variables d'environnement & secrets
+- `docs/ci-cd.md` : Workflows GitHub Actions & déploiement
+- `docs/api-reference.md` : Endpoints backend principaux
+- `docs/development.md` : Guide installation & développement
+
+Gardez ces fichiers à jour lors de toute évolution majeure.
+
+### Monitoring & Sentry
+
+Le projet est instrumenté avec Sentry (profiling + tracing) et Pino pour les logs structurés.
+
+Variables d'environnement (local et CI):
+
+```
+# Frontend
+NEXT_PUBLIC_SENTRY_DSN=VotreDSN
+
+# Backend
+SENTRY_DSN=VotreDSN
+
+# Upload sourcemaps (CI)
+SENTRY_ORG=votre-org
+SENTRY_PROJECT=votre-projet
+SENTRY_AUTH_TOKEN=token-avec-scopes
+```
+
+Sourcemaps: le build Next.js est wrapé par `withSentryConfig` (voir `next.config.js`). Lors de `pnpm build`, Sentry CLI uploade automatiquement les sourcemaps si ces variables sont définies (ou via `sentry.properties`).
+
+Logs backend: `pino` (pretty en dev, JSON en prod). Le middleware d'erreurs renvoie un `errorId` traçable (Sentry).
 
 ## Déploiement one-click
 - Bouton "Déployer sur Vercel" intégré à la page d'accueil

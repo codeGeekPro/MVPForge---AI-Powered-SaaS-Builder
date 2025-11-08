@@ -11,6 +11,13 @@ describe('Endpoints Authentification', () => {
     expect(response.body).toHaveProperty('token');
   });
 
+  it('POST /api/auth/login - Erreur si username manquant', async () => {
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({ });
+    expect(response.status).toBe(400);
+  });
+
   it('GET /api/auth/secure-data - Accès sécurisé avec token valide', async () => {
     const loginResponse = await request(app)
       .post('/api/auth/login')
@@ -29,5 +36,12 @@ describe('Endpoints Authentification', () => {
   it('GET /api/auth/secure-data - Accès refusé sans token', async () => {
     const response = await request(app).get('/api/auth/secure-data');
     expect(response.status).toBe(401);
+  });
+
+  it('GET /api/auth/secure-data - Token invalide -> 403', async () => {
+    const response = await request(app)
+      .get('/api/auth/secure-data')
+      .set('Authorization', 'Bearer invalid.token.here');
+    expect([401,403]).toContain(response.status);
   });
 });

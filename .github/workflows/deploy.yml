@@ -8,6 +8,12 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -23,6 +29,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: Approve builds for Sentry CLI (pnpm)
+        run: pnpm approve-builds @sentry/cli
 
       - name: Run frontend tests
         run: pnpm test:frontend

@@ -28,6 +28,7 @@ import {
 } from "@chakra-ui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { generateFullMvp } from "../lib/api";
 import {
   FiPocket,
   FiZap,
@@ -118,17 +119,9 @@ function ModernMVPGenerator() {
       setResult((prev) => ({ ...prev!, progress, currentStep: step }));
     }
 
-    // Appel API réel
+    // Appel API réel (via client typé)
     try {
-      const res = await fetch(
-        "http://localhost:4000/api/ai/generate-complete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        }
-      );
-      const data = await res.json();
+      const data = await generateFullMvp(prompt);
       setResult((prev) => ({ ...prev!, ...data }));
     } catch (e) {
       console.error(e);

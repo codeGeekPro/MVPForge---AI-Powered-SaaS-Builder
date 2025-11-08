@@ -26,6 +26,7 @@ import {
   Textarea
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { generateMVP, classifyIdea } from "../lib/api";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
@@ -46,13 +47,9 @@ export default function Home() {
       setTimeout(() => setStep(2), 1000);
       setTimeout(() => setStep(3), 2000);
       
-      const res = await fetch("http://localhost:4000/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      setResult(data.result);
+      const data = await generateMVP(prompt);
+      // compat: backend renvoie { mvp }
+      setResult((data as any).mvp || (data as any).result || "");
       setStep(4);
       
       // Score simulation
@@ -68,12 +65,7 @@ export default function Home() {
     setLoading(true);
     setAnalysis(null);
     try {
-      const res = await fetch("http://localhost:4000/api/ai/classify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: prompt }),
-      });
-      const data = await res.json();
+      const data = await classifyIdea(prompt);
       setAnalysis(data);
     } catch (e) {
       setAnalysis({ error: "Erreur lors de l'analyse IA" });

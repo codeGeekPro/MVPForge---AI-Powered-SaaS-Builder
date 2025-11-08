@@ -1,0 +1,165 @@
+{
+  "id": null,
+  "uid": null,
+  "title": "MVPForge - API Observability",
+  "timezone": "",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "ds",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {},
+        "hide": 0,
+        "label": "Datasource",
+        "refresh": 2
+      },
+      {
+        "name": "route",
+        "type": "query",
+        "label": "Route",
+        "datasource": { "type": "prometheus", "uid": "$ds" },
+        "query": "label_values(http_responses_total, route)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {}
+      }
+    ]
+  },
+  "annotations": { "list": [ { "builtIn": 1, "datasource": { "type": "grafana", "uid": "grafana" }, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard" } ] },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Requests per second (by route)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "req/s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (route) (rate(http_responses_total{route=~\"$route\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p50/p95/p99 (ms) by route",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "P50",
+          "legendFormat": "p50 {{route}}",
+          "expr": "histogram_quantile(0.50, sum by (le, route) (rate(http_response_time_ms_bucket{route=~\"$route\"}[$__rate_interval])))"
+        },
+        {
+          "refId": "P95",
+          "legendFormat": "p95 {{route}}",
+          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_response_time_ms_bucket{route=~\"$route\"}[$__rate_interval])))"
+        },
+        {
+          "refId": "P99",
+          "legendFormat": "p99 {{route}}",
+          "expr": "histogram_quantile(0.99, sum by (le, route) (rate(http_response_time_ms_bucket{route=~\"$route\"}[$__rate_interval])))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Error rate (5xx) %",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green" }, { "color": "orange", "value": 1 }, { "color": "red", "value": 5 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (sum(rate(http_responses_total{status=~\"5..\"}[$__rate_interval])) / sum(rate(http_responses_total[$__rate_interval])))"
+        }
+      ]
+    },
+    {
+      "type": "gauge",
+      "title": "Cache hit rate (%)",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": 0 }, { "color": "orange", "value": 40 }, { "color": "green", "value": 80 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [ { "refId": "A", "expr": "cache_hit_rate" } ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Responses by status",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "req/s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{status}}",
+          "expr": "sum by (status) (rate(http_responses_total[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU usage (s/s)",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 22 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "s/s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(process_cpu_user_seconds_total[$__rate_interval]) + rate(process_cpu_system_seconds_total[$__rate_interval])"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory RSS (bytes)",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 22 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "process_resident_memory_bytes"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests per method",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 30 },
+      "datasource": { "type": "prometheus", "uid": "$ds" },
+      "fieldConfig": { "defaults": { "unit": "req/s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{method}}",
+          "expr": "sum by (method) (rate(http_responses_total[$__rate_interval]))"
+        }
+      ]
+    }
+  ]
+}

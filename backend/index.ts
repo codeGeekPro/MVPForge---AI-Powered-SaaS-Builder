@@ -7,73 +7,46 @@ import dotenv from 'dotenv';
 import archiver from 'archiver';
 import { FreeAPIManager } from './free-api-manager';
 import rateLimit from 'express-rate-limit';
-import winston from 'winston';
-import { Sequelize } from 'sequelize';
+import { logger, requestLogger, errorHandler } from './lib/monitoring';
+import { metricsMiddleware } from './lib/metrics';
+import healthRouter from './routes/health';
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import authRouter from './auth';
-import { validateRequest, generateMvpSchema, classifyIdeaSchema } from './validation';
+import { ipRateLimit, aiRateLimit } from './middleware/rate-limit';
+import { validateBody, generateMvpSchema, classifyIdeaSchema } from './validation';
+import { z } from 'zod';
+
+import { initTelemetry } from './telemetry'; // Initialise OpenTelemetry avant tout
+initTelemetry();
 
 dotenv.config();
 
 const app: Application = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(bodyParser.json());
 
 const apiManager = new FreeAPIManager();
 const prisma = new PrismaClient();
 
-// Configuration de la base de données SQLite
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite',
-});
+// Rate limiting avancé
+app.use(ipRateLimit);
 
-// Configuration des logs avec Winston
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf((info) => `${info.timestamp} [${info.level}] ${info.message}`)
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/app.log' })
-  ]
-});
+// Logs & métriques
+app.use(requestLogger);
+app.use(metricsMiddleware);
 
-// Middleware de rate limiting
-// Limite de 100 requêtes par 15 minutes par IP
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: { error: 'Trop de requêtes, réessayez plus tard.' }
-});
-app.use(limiter);
+// Base de données gérée via Prisma (voir backend/prisma/schema.prisma)
+// La connexion est gérée paresseusement par Prisma lors des requêtes.
 
-// Exemple d'utilisation des logs
-app.use((req: express.Request, res: express.Response, next: express.NextFunction): void => {
-  logger.info(`${req.method} ${req.url}`);
-  next();
-});
-
-// Exemple d'utilisation de la base de données
-interface SequelizeSuccess {
-  (): Promise<void>;
-}
-
-interface SequelizeError {
-  (err: Error): void;
-}
-
-sequelize.authenticate()
-  .then(() => logger.info('Connexion à la base de données réussie'))
-  .catch((err: Error) => logger.error('Erreur de connexion à la base de données', err));
-
-app.get('/api/health', (req: express.Request, res: express.Response): void => {
-  res.status(200).send({ status: 'OK' });
-});
+// Health & metrics
+app.use('/api', healthRouter);
 
 // Pré-processing intelligent du prompt selon le contexte
 function preprocessPrompt(prompt: string, type: 'generate' | 'classify' = 'generate'): string {
@@ -85,7 +58,7 @@ function preprocessPrompt(prompt: string, type: 'generate' | 'classify' = 'gener
   return prompt;
 }
 
-app.post('/api/ai/generate', validateRequest(generateMvpSchema), async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/generate', aiRateLimit, validateBody(generateMvpSchema), async (req: express.Request, res: express.Response): Promise<void> => {
   console.log('=== Début de la requête /api/ai/generate ===');
   console.log('Body reçu:', req.body);
   
@@ -122,7 +95,7 @@ app.post('/api/ai/generate', validateRequest(generateMvpSchema), async (req: exp
   }
 });
 
-app.post('/api/ai/classify', validateRequest(classifyIdeaSchema), async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/classify', validateBody(classifyIdeaSchema), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   if (!idea) {
     res.status(400).json({ error: 'Champ "idea" requis' });
@@ -164,7 +137,7 @@ Réponds au format JSON strict :
 
 // 🚀 NOUVEAUX ENDPOINTS RÉVOLUTIONNAIRES
 
-app.post('/api/ai/generate-full-mvp', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/generate-full-mvp', aiRateLimit, validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   
   try {
@@ -214,7 +187,7 @@ app.post('/api/ai/generate-full-mvp', async (req: express.Request, res: express.
   }
 });
 
-app.post('/api/ai/smart-score', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/smart-score', validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   
   try {
@@ -247,7 +220,7 @@ app.post('/api/ai/smart-score', async (req: express.Request, res: express.Respon
 });
 
 // 🚀 INTÉGRATION MULTI-MODÈLES IA
-app.post('/api/ai/multi-model-generation', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/multi-model-generation', aiRateLimit, validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   
   try {
@@ -284,7 +257,7 @@ app.post('/api/ai/multi-model-generation', async (req: express.Request, res: exp
 });
 
 // 📦 TÉLÉCHARGEMENT CODE COMPLET
-app.post('/api/code/download-mvp', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/code/download-mvp', aiRateLimit, validateBody(z.object({ projectName: z.string().optional(), idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { projectName, idea } = req.body;
   
   try {
@@ -342,7 +315,7 @@ export default function Home() {
 });
 
 // 🔍 RECHERCHE CONCURRENTIELLE TEMPS RÉEL
-app.post('/api/market/competition-analysis', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/market/competition-analysis', validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   
   try {
@@ -394,7 +367,7 @@ app.post('/api/market/competition-analysis', async (req: express.Request, res: e
 });
 
 // 📊 MÉTRIQUES & KPIs PERSONNALISÉS
-app.post('/api/analytics/suggest-kpis', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/analytics/suggest-kpis', validateBody(z.object({ idea: z.string(), businessModel: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea, businessModel } = req.body;
   
   try {
@@ -446,7 +419,7 @@ app.post('/api/analytics/suggest-kpis', async (req: express.Request, res: expres
 });
 
 // Endpoint IA Multi-Agents Parallèles
-app.post('/api/ai/multi-agents', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/multi-agents', validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   if (!idea) {
     res.status(400).json({ error: 'Champ "idea" requis' });
@@ -495,7 +468,7 @@ app.post('/api/ai/multi-agents', async (req: express.Request, res: express.Respo
 });
 
 // Endpoint : Génération de code téléchargeable (ZIP)
-app.post('/api/ai/generate-code-zip', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/generate-code-zip', aiRateLimit, validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   if (!idea) {
     res.status(400).json({ error: 'Champ "idea" requis' });
@@ -548,7 +521,7 @@ app.post('/api/ai/generate-code-zip', async (req: express.Request, res: express.
 });
 
 // Endpoint : Génération de suggestions d'expérimentations
-app.post('/api/ai/experiments', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/ai/experiments', aiRateLimit, validateBody(z.object({ idea: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea } = req.body;
   if (!idea) {
     res.status(400).json({ error: 'Champ "idea" requis' });
@@ -593,15 +566,16 @@ Réponds en JSON :
 });
 
 // Sauvegarde d'un MVP généré dans la base
-app.post('/api/mvp/save', async (req: express.Request, res: express.Response): Promise<void> => {
+app.post('/api/mvp/save', validateBody(z.object({ idea: z.string(), result: z.string() })), async (req: express.Request, res: express.Response): Promise<void> => {
   const { idea, result } = req.body;
-  if (!idea || !result) {
-    res.status(400).json({ error: 'Champs "idea" et "result" requis' });
-    return;
-  }
   try {
+    // Associer à un utilisateur démo pour satisfaire la contrainte relationnelle
+    let user = await prisma.user.findUnique({ where: { email: 'demo@mvpforge.com' } });
+    if (!user) {
+      user = await prisma.user.create({ data: { email: 'demo@mvpforge.com', name: 'Demo User', plan: 'pro' } });
+    }
     const mvp = await prisma.mvp.create({
-      data: { idea, result }
+      data: { idea, result, user: { connect: { id: user.id } } }
     });
     res.json({ success: true, mvp });
   } catch (e: unknown) {
@@ -623,7 +597,7 @@ app.get('/api/mvp/history', async (req: express.Request, res: express.Response):
 });
 
 // Endpoint pour lire les logs (pour dashboard frontend)
-app.get('/api/logs', (req, res) => {
+app.get('/api/logs', (req: express.Request, res: express.Response) => {
   fs.readFile('logs/app.log', 'utf8', (err, data) => {
     if (err) return res.json({ logs: [] });
     const logs = data.split('\n').filter(Boolean).slice(-100).reverse();
@@ -643,5 +617,8 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`Backend SaasForge lancé sur le port ${PORT}`);
   });
 }
+
+// Error handler global
+app.use(errorHandler);
 
 export default app;

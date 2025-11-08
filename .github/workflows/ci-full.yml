@@ -1,0 +1,76 @@
+name: Full CI (Frontend + Backend + Sentry Sourcemaps)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mvpforge_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mvpforge_ci?schema=public
+      NODE_ENV: test
+      OPENAI_API_KEY: test-key
+      JWT_SECRET: test-jwt
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies (root)
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter ./backend prisma generate
+
+      - name: Run migrations
+        run: pnpm --filter ./backend prisma migrate deploy
+
+      - name: Seed database
+        run: pnpm --filter ./backend prisma db seed
+
+      - name: Backend tests
+        run: pnpm test:backend
+
+      - name: Frontend tests
+        run: pnpm test:frontend
+
+      - name: Build (Next.js + Sourcemaps Sentry)
+        run: pnpm build
+
+      - name: Upload build artifact (optional)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+
+      - name: Summary
+        run: |
+          echo "✅ CI terminée (tests + build + upload sourcemaps Sentry)." >> $GITHUB_STEP_SUMMARY

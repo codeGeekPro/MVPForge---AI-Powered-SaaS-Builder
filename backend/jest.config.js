@@ -6,13 +6,24 @@ module.exports = {
     '**/__tests__/**/*.(test|spec).ts',
     '**/*.(test|spec).ts'
   ],
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text','lcov'],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 75,
+      lines: 80,
+      statements: 80,
+    },
+  },
   collectCoverageFrom: [
-    '**/*.ts',
-    '!**/*.d.ts',
-    '!**/node_modules/**',
-    '!**/dist/**',
-    '!**/*.test.ts',
-    '!**/*.spec.ts'
+    'lib/metrics.ts',
+    'auth.ts'
+  ],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
   ],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {

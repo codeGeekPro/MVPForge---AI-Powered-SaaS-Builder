@@ -30,6 +30,7 @@ import LogsDashboard from "./logs-dashboard";
 import Head from 'next/head';
 import { FaTwitter, FaLinkedin } from 'react-icons/fa';
 import { styles } from './styles';
+import { generateMVP as apiGenerateMVP, multiAgents as apiMultiAgents, generateExperiments as apiGenerateExperiments, generateCodeZip as apiGenerateCodeZip, classifyIdea as apiClassify } from '@/lib/api';
 
 export default function Home() {
   // Gestion de la langue
@@ -117,13 +118,8 @@ export default function Home() {
     setLoading(true);
     setResult("");
     try {
-      const res = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
-      setResult(data.result || data.message || "MVP généré avec succès !");
+      const data = await apiGenerateMVP(prompt);
+      setResult((data as any).mvp || (data as any).result || "MVP généré avec succès !");
     } catch (e) {
       setResult("Erreur lors de la génération IA");
     }
@@ -134,12 +130,7 @@ export default function Home() {
     setLoading(true);
     setMultiAgents(null);
     try {
-      const res = await fetch("/api/ai/multi-agents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
+      const data = await apiMultiAgents(prompt);
       setMultiAgents(data);
     } catch (e) {
       setMultiAgents({ error: "Erreur lors de l'analyse multi-agents" });
@@ -151,12 +142,7 @@ export default function Home() {
     setLoading(true);
     setExperiments(null);
     try {
-      const res = await fetch("/api/ai/experiments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await res.json();
+      const data = await apiGenerateExperiments(prompt);
       setExperiments(data);
     } catch (e) {
       setExperiments({ error: "Erreur lors des expérimentations" });
@@ -166,12 +152,7 @@ export default function Home() {
 
   const handleDownloadCode = async () => {
     try {
-      const res = await fetch("/api/ai/download", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const blob = await res.blob();
+      const blob = await apiGenerateCodeZip(prompt);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -186,12 +167,7 @@ export default function Home() {
     setLoading(true);
     setAnalysis(null);
     try {
-      const res = await fetch("/api/ai/classify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea: prompt }),
-      });
-      const data = await res.json();
+      const data = await apiClassify(prompt);
       setAnalysis(data);
     } catch (e) {
       setAnalysis({ error: "Erreur lors de l'analyse IA" });

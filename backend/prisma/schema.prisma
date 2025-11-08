@@ -1,24 +1,51 @@
-// Prisma schema pour MVPForge
-// Ce fichier définit la structure de la base de données SQLite
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Mvp {
-  id        Int      @id @default(autoincrement())
-  idea      String
-  result    String
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  plan      String   @default("free")
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mvps      Mvp[]
+  apiKeys   ApiKey[]
 }
 
-model Log {
-  id        Int      @id @default(autoincrement())
-  message   String
+model Mvp {
+  id          String   @id @default(cuid())
+  idea        String   @db.Text
+  result      String   @db.Text
+  metadata    Json?
+  status      String   @default("generated")
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
+  lastUsed  DateTime?
+
+  @@index([userId])
 }

@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -17,4 +19,11 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const sentryWebpackPluginOptions = {
+  // La config org/projet/token provient d'env (SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN)
+  // ou du fichier sentry.properties à la racine.
+  silent: true,
+  telemetry: false,
+};
+
+module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
